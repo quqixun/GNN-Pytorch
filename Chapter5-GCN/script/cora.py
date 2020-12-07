@@ -10,6 +10,7 @@
 import os
 import time
 import pickle
+import numpy as np
 import urllib.request
 
 from utils import *
@@ -35,7 +36,7 @@ class CoraData(object):
     """
 
     url_root = 'https://github.com/kimiyoung/planetoid/raw/master/data'
-    filenames = [
+    files = [
         'ind.cora.x', 'ind.cora.tx', 'ind.cora.allx',
         'ind.cora.y', 'ind.cora.ty', 'ind.cora.ally',
         'ind.cora.graph', 'ind.cora.test.index'
@@ -69,8 +70,8 @@ class CoraData(object):
             print('[Step:1/3] Downloading Raw Cora Dataset ...')
             self.download_data()
 
-            # print('[Step:2/3] Processing Cora Dataset ...')
-            # self.data = self.process_data()
+            print('[Step:2/3] Processing Cora Dataset ...')
+            self.data = self.process_data()
 
             # print('[Step:3/3] Cached File:', self.prep_file)
             # with open(self.prep_file, 'wb') as f:
@@ -91,7 +92,7 @@ class CoraData(object):
         # 生成self.raw_dir文件夹
         create_dir(self.raw_dir)
 
-        for name in self.filenames:
+        for name in self.files:
             # 遍历各数据文件
             file = os.path.join(self.raw_dir, name)
             if not os.path.isfile(file):
@@ -132,7 +133,46 @@ class CoraData(object):
         """
         """
 
+        x, tx, allx, y, ty, ally, graph, test_index = \
+            [self.read_data(os.path.join(self.raw_dir, file)) for file in self.files]
+
+        print('x', x.shape, x.dtype)
+        print('tx', tx.shape, tx.dtype)
+        print('allx', allx.shape, allx.dtype)
+        print('y', y.shape, y.dtype)
+        print('ty', ty.shape, ty.dtype)
+        print('ally', ally.shape, ally.dtype)
+        # print(graph)
+        # print(graph.shape, graph.dtype)
+        print('test_index', test_index.shape, test_index.dtype)
+
+        print(test_index)
+
         return
+
+    @staticmethod
+    def read_data(file):
+        """使用不同方式读取原始数据
+
+            Input:
+            ------
+            file:, string, 需读取的文件路径
+
+            Output:
+            -------
+            content: numpy array, 文件内容
+
+        """
+
+        file_name = os.path.basename(file)
+        if file_name == 'ind.cora.test.index':
+            content = np.genfromtxt(file, dtype='int64')
+        else:
+            content = pickle.load(open(file, 'rb'), encoding='latin1')
+            if hasattr(content, 'toarray'):
+                content = content.toarray()
+
+        return content
 
 
 if __name__ == '__main__':
