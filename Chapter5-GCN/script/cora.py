@@ -8,20 +8,25 @@
 
 
 import os
-import time
 import pickle
 import numpy as np
 import urllib.request
 
 from utils import *
+from itertools import groupby
 from collections import namedtuple
+from scipy.sparse import coo_matrix
 
 
 Data = namedtuple(
     typename='Data',
     field_names=[
-        'x', 'y', 'adjacency', 'train_mask',
-        'val_mask', 'test_mask'
+        'X',
+        'y',
+        'adjacency',
+        'test_mask',
+        'train_mask',
+        'valid_mask'
     ]
 )
 
@@ -73,9 +78,9 @@ class CoraData(object):
             print('[Step:2/3] Processing Cora Dataset ...')
             self.data = self.process_data()
 
-            # print('[Step:3/3] Cached File:', self.prep_file)
-            # with open(self.prep_file, 'wb') as f:
-            #     pickle.dump(self.data, f)
+            print('[Step:3/3] Cached File:', self.prep_file)
+            with open(self.prep_file, 'wb') as f:
+                pickle.dump(self.data, f)
 
         return
 
@@ -130,25 +135,56 @@ class CoraData(object):
     # 预处理Cora数据集
 
     def process_data(self):
-        """
+        """Cora数据处理
+
+            处理数据, 得到节点特征和标签, 邻接矩阵, 训练集, 验证集及测试集
+
+            Output:
+            -------
+            dataset: Data tuple, 预处理后的Cora数据集
+
         """
 
-        x, tx, allx, y, ty, ally, graph, test_index = \
+        # 读取数据
+        _, tx, allx, y, ty, ally, graph, test_index = \
             [self.read_data(os.path.join(self.raw_dir, file)) for file in self.files]
 
-        print('x', x.shape, x.dtype)
-        print('tx', tx.shape, tx.dtype)
-        print('allx', allx.shape, allx.dtype)
-        print('y', y.shape, y.dtype)
-        print('ty', ty.shape, ty.dtype)
-        print('ally', ally.shape, ally.dtype)
-        # print(graph)
-        # print(graph.shape, graph.dtype)
-        print('test_index', test_index.shape, test_index.dtype)
+        # 训练集与验证集样本索引
+        train_index = np.arange(len(y))
+        valid_index = np.arange(len(y), len(y) + 500)
 
-        print(test_index)
+        # 合并其他样本与测试集样本
+        X = np.concatenate([allx, tx], axis=0)
+        y = np.concatenate([ally, ty], axis=0).argmax(axis=1)
 
-        return
+        # 测试集样本按顺序排列
+        sorted_test_index = sorted(test_index)
+        X[test_index] = X[sorted_test_index]
+        y[test_index] = y[sorted_test_index]
+
+        # 训练集, 验证集及测试集节点划分
+        num_nodes = len(X)
+        test_mask = np.zeros(num_nodes, dtype=bool)
+        train_mask = np.zeros(num_nodes, dtype=bool)
+        valid_mask = np.zeros(num_nodes, dtype=bool)
+        test_mask[test_index] = True
+        train_mask[train_index] = True
+        valid_mask[valid_index] = True
+
+        # 根据图结构建立邻接矩阵
+        adjacency = self.build_adjacency(graph)
+
+        # 合并数据
+        dataset = Data(
+            X=X,
+            y=y,
+            adjacency=adjacency,
+            test_mask=test_mask,
+            train_mask=train_mask,
+            valid_mask=valid_mask
+        )
+
+        return dataset
 
     @staticmethod
     def read_data(file):
@@ -173,6 +209,41 @@ class CoraData(object):
                 content = content.toarray()
 
         return content
+
+    @staticmethod
+    def build_adjacency(graph):
+        """根据图结构建立邻接矩阵
+
+            Input:
+            ------
+            graph: dict, 每个节点的相邻节点字典
+
+            Output:
+            -------
+            adjacency: numpy array, 邻接矩阵
+
+        """
+
+        # 每条边的两节点索引列表, 每一对节点表示一条边
+        edge_index = []
+        for src, dst in graph.items():
+            edge_index.extend([src, v] for v in dst)
+            edge_index.extend([v, src] for v in dst)
+
+        # 删除重复的边
+        sorted_edge_index = sorted(edge_index)
+        edge_index = list(k for k, _ in groupby(sorted_edge_index))
+
+        # 建立邻接矩阵
+        num_nodes = len(graph)
+        num_edges = len(edge_index)
+        edge_index = np.asarray(edge_index)
+        adjacency = coo_matrix((
+            np.ones(num_edges),
+            (edge_index[:, 0], edge_index[:, 1])
+        ), shape=(num_nodes, num_nodes), dtype=float)
+
+        return adjacency
 
 
 if __name__ == '__main__':
