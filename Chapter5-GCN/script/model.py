@@ -8,14 +8,13 @@ import torch.nn as nn
 
 class GraphConvolution(nn.Module):
 
-    def __init__(self, adjacency, input_dim, output_dim, use_bias=True):
+    def __init__(self, input_dim, output_dim, use_bias=True):
         """
         """
 
         super(GraphConvolution, self).__init__()
 
         self.use_bias = use_bias
-        self.adjacency = adjacency
         self.weight = nn.Parameter(torch.Tensor(input_dim, output_dim))
 
         if self.use_bias:
@@ -27,7 +26,7 @@ class GraphConvolution(nn.Module):
 
         return
 
-    def __init_parameters(self, use_bias):
+    def __init_parameters(self):
         """
         """
 
@@ -37,12 +36,12 @@ class GraphConvolution(nn.Module):
 
         return
 
-    def forward(self, X):
+    def forward(self, adjacency, X):
         """
         """
 
         support = torch.mm(X, self.weight)
-        output = torch.sparse.mm(self.adjacency, support)
+        output = torch.sparse.mm(adjacency, support)
         if self.use_bias:
             output += self.bias
 
@@ -53,30 +52,22 @@ class GCNet(nn.Module):
     """
     """
 
-    def __init__(self, adjacency, input_dim, output_dim, hidden_dims, use_bias=True):
+    def __init__(self, input_dim, output_dim, hidden_dim, use_bias=True):
         """
         """
 
         super(GCNet, self).__init__()
 
-        assert len(hidden_dims) >= 1
-
-        layers = []
-        dims = [input_dim] + hidden_dims
-        for i in range(len(dims) - 1):
-            layers.extend([
-                GraphConvolution(adjacency, dims[i], dims[i + 1], use_bias),
-                nn.ReLU(inplace=True)
-            ])
-
-        layers.append(GraphConvolution(adjacency, dims[-1], output_dim, use_bias))
-        self.models = nn.Sequential(layers)
+        self.gcn1 = GraphConvolution(input_dim, hidden_dim, use_bias)
+        self.act1 = nn.ReLU(inplace=True)
+        self.gcn2 = GraphConvolution(hidden_dim, output_dim, use_bias)
 
         return
 
-    def forward(self, X):
+    def forward(self, adjacency, X):
         """
         """
 
-        logits = self.models(X)
+        out = self.act1(self.gcn1(adjacency, X))
+        logits = self.scn2(adjacency, out)
         return logits
