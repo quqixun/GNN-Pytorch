@@ -12,7 +12,7 @@ import pickle
 import numpy as np
 import urllib.request
 
-from utils import *
+from .utils import *
 from itertools import groupby
 from collections import namedtuple
 from scipy.sparse import coo_matrix
@@ -73,10 +73,10 @@ class CoraData(object):
         else:
             # 预处理Cora数据集不存在或更新现有数据集
             print('[Step:1/3] Downloading Raw Cora Dataset ...')
-            self.download_data()
+            self.__download_data()
 
             print('[Step:2/3] Processing Cora Dataset ...')
-            self.data = self.process_data()
+            self.data = self.__process_data()
 
             print('[Step:3/3] Cached File:', self.prep_file)
             with open(self.prep_file, 'wb') as f:
@@ -87,7 +87,7 @@ class CoraData(object):
     # ------------------------------------------------------------------------
     # 下载Cora数据集
 
-    def download_data(self):
+    def __download_data(self):
         """下载原始Cora数据集
 
             分别下载各数据文件, 保存至self.raw_dir文件夹
@@ -103,11 +103,11 @@ class CoraData(object):
             if not os.path.isfile(file):
                 # 若数据文件不存在则下载文件
                 url = '{}/{}'.format(self.url_root, name)
-                self.download_from_url(url, file)
+                self.__download_from_url(url, file)
 
         return
 
-    def download_from_url(self, url, file):
+    def __download_from_url(self, url, file):
         """根据url下载文件
 
             从url下载文件保存至file
@@ -127,14 +127,14 @@ class CoraData(object):
             data.close()
         except Exception:
             # 下载失败, 尝试再次下载
-            self.download_from_url(url, file)
+            self.__download_from_url(url, file)
 
         return
 
     # ------------------------------------------------------------------------
     # 预处理Cora数据集
 
-    def process_data(self):
+    def __process_data(self):
         """Cora数据处理
 
             处理数据, 得到节点特征和标签, 邻接矩阵, 训练集, 验证集及测试集
@@ -244,8 +244,3 @@ class CoraData(object):
         ), shape=(num_nodes, num_nodes), dtype=float)
 
         return adjacency
-
-
-if __name__ == '__main__':
-
-    cora_data = CoraData(output_dir='../data/cora', rebuild=False)
