@@ -14,21 +14,7 @@ import urllib.request
 
 from .utils import *
 from itertools import groupby
-from collections import namedtuple
 from scipy.sparse import coo_matrix
-
-
-Data = namedtuple(
-    typename='Data',
-    field_names=[
-        'X',
-        'y',
-        'adjacency',
-        'test_mask',
-        'train_mask',
-        'valid_mask'
-    ]
-)
 
 
 class CoraData(object):
@@ -137,7 +123,13 @@ class CoraData(object):
 
             Output:
             -------
-            dataset: Data tuple, 预处理后的Cora数据集
+            dataset: Data tuple, 预处理后的Cora数据集, 包含的元素为:
+                     X: numpy array, 节点特征
+                     y: numpy array, 节点类别标签
+                     adjacency: sparse numpy array, 邻接矩阵
+                     test_mask: numpy array, 测试集样本mask
+                     train_mask: numpy array, 训练集样本mask
+                     valid_mask: numpy array, 验证集样本mask
 
         """
 
