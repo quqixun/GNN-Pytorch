@@ -53,8 +53,8 @@ class GraphConvolution(nn.Module):
 
             Inputs:
             -------
-            adjacency: tensor in shape [num_node, num_nodes], 邻接矩阵
-            X: tensor in shape [num_nodes, num_features], 节点特征
+            adjacency: tensor in shape [num_nodes, num_nodes], 邻接矩阵
+            X: tensor in shape [num_nodes, input_dim], 节点特征
 
             Output:
             -------
@@ -102,7 +102,7 @@ class GCNet(nn.Module):
 
             Inputs:
             -------
-            adjacency: tensor in shape [num_node, num_nodes], 邻接矩阵
+            adjacency: tensor in shape [num_nodes, num_nodes], 邻接矩阵
             X: tensor in shape [num_nodes, input_dim], 节点特征
 
             Output:
