@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 
-from aggregate import NeighborAggregator
+from .aggregate import NeighborAggregator
 
 
 class SAGEGCN(nn.Module):
