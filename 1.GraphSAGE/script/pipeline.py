@@ -1,41 +1,47 @@
-"""GCN模型训练与预测
+"""GraphSAGE模型训练与预测
 """
 
 
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 
-from .model import GCNet
+from .model import GraphSAGE
+from .sampling import multihop_sampling
 
 
 class Pipeline(object):
-    """GCN模型训练与预测
+    """GraphSAGE模型训练与预测
     """
 
     def __init__(self, **params):
-        """GCN模型训练与预测
+        """GraphSAGE模型训练与预测
 
             加载GCN模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
-                    params = {
+                    {
                         'model': {
-                            'input_dim': 1433,
-                            'output_dim': 7,
-                            'hidden_dim': 16,
-                            'use_bias': True
+                            'input_dim': 1433,              # 节点特征维度
+                            'hidden_dims': [128, 7],        # 隐层输出特征维度
+                            'num_neighbors_list': [10, 10]  # 没接采样邻居的节点数
                         },
                         'hyper': {
-                            'lr': 1e-2,
-                            'epochs': 100,
-                            'weight_decay': 5e-4
+                            'lr': 3e-3,                # 优化器初始学习率
+                            'epochs': 10,              # 训练轮次
+                            'batch_size': 16,          # 批数据大小
+                            'weight_decay': 5e-4,      # 优化器权重衰减
+                            'num_batch_per_epoch': 20  # 每个epoch循环的批次数
                         }
                     }
 
         """
+
+        # 获取可用的计算设备
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
@@ -51,9 +57,12 @@ class Pipeline(object):
 
         """
 
-        self.model = GCNet(**model_params)
-        if torch.cuda.is_available():
-            self.model.cuda()
+        # 建立模型
+        self.model = GraphSAGE(**model_params)
+        self.model = self.model.to(self.device)
+
+        # 每一阶采样的邻居数量列表
+        self.num_neighbors_list = model_params['num_neighbors_list']
 
         return
 
@@ -66,7 +75,10 @@ class Pipeline(object):
 
         """
 
+        # 训练过程参数
         self.epochs = hyper_params['epochs']
+        self.batch_size = hyper_params['batch_size']
+        self.num_batch_per_epoch = hyper_params['num_batch_per_epoch']
 
         # 定义损失函数
         self.criterion = nn.CrossEntropyLoss()
@@ -85,29 +97,41 @@ class Pipeline(object):
 
             Input:
             ------
-            dataset: Data, 包含X, y, adjacency, test_mask,
-                     train_mask和valid_mask
+            dataset: Data, 包含X, y, adjacency_dict, test_index,
+                     train_index和valid_index
 
         """
-
-        # 训练集标签
-        train_y = dataset.y[dataset.train_mask]
 
         for epoch in range(self.epochs):
             # 模型训练模式
             self.model.train()
 
-            # 模型输出
-            logits = self.model(dataset.adjacency, dataset.X)
-            train_logits = logits[dataset.train_mask]
+            # 用于记录每个epoch中所有batch的loss
+            epoch_losses = []
 
-            # 计算损失函数
-            loss = self.criterion(train_logits, train_y)
+            for batch in range(self.num_batch_per_epoch):
+                # 在每一个batch中, 对节点进行采样, 并对节点的多阶邻居进行采样
+                train_index = np.random.choice(dataset.train_index, size=(self.batch_size,))
+                neighbor_index = multihop_sampling(train_index, self.num_neighbors_list, dataset.adjacency_dict)
 
-            # 反向传播
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+                # 采样节点的标签和其邻居(包含采样节点本身)的特征
+                train_y = torch.from_numpy(dataset.y[train_index]).long().to(self.device)
+                neighbor_X = [torch.from_numpy(dataset.X[index]).float().to(self.device) for index in neighbor_index]
+
+                # 模型输出
+                train_logits = self.model(neighbor_X)
+
+                # 计算损失函数
+                loss = self.criterion(train_logits, train_y)
+                epoch_losses.append(loss.item())
+
+                # 反向传播
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+            # 计算epoch中所有batch的loss的均值
+            epoch_loss = np.mean(epoch_losses)
 
             # 计算训练集准确率
             train_acc = self.predict(dataset, 'train')
@@ -115,7 +139,7 @@ class Pipeline(object):
             valid_acc = self.predict(dataset, 'valid')
 
             print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
-                epoch, loss, train_acc, valid_acc))
+                epoch, epoch_loss, train_acc, valid_acc))
 
         return
 
@@ -124,8 +148,8 @@ class Pipeline(object):
 
             Inputs:
             -------
-            dataset: Data, Data, 包含X, y, adjacency, test_mask,
-                     train_mask和valid_mask
+            dataset: Data, 包含X, y, adjacency_dict, test_index,
+                     train_index和valid_index
             split: string, 待预测的节点
 
             Output:
@@ -137,20 +161,24 @@ class Pipeline(object):
         # 模型推断模式
         self.model.eval()
 
-        # 节点mask
+        # 数据划分节点索引
         if split == 'train':
-            mask = dataset.train_mask
+            index = dataset.train_index
         elif split == 'valid':
-            mask = dataset.valid_mask
+            index = dataset.valid_index
         else:  # split == 'test'
-            mask = dataset.test_mask
+            index = dataset.test_index
+
+        # 数据划分节点的标签和其邻居(包含节点本身)的特征
+        neighbor_index = multihop_sampling(index, self.num_neighbors_list, dataset.adjacency_dict)
+        neighbor_X = [torch.from_numpy(dataset.X[index]).float().to(self.device) for index in neighbor_index]
 
         # 获得待预测节点的输出
-        logits = self.model(dataset.adjacency, dataset.X)
-        predict_y = logits[mask].max(1)[1]
+        logits = self.model(neighbor_X)
+        predict_y = logits.max(1)[1]
 
         # 计算预测准确率
-        y = dataset.y[mask]
+        y = torch.from_numpy(dataset.y[index]).long().to(self.device)
         accuracy = torch.eq(predict_y, y).float().mean()
 
         return accuracy

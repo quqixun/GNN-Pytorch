@@ -28,7 +28,7 @@ Data = namedtuple(
 )
 
 
-# 定义预处理数据结构
+# 定义预处理后的数据结构
 PrepData = namedtuple(
     typename='PrepData',
     field_names=[

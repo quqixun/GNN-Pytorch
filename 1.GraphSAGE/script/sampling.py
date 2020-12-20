@@ -9,14 +9,14 @@
 import numpy as np
 
 
-def sampling(src_nodes, sample_num, neighbor_table):
+def sampling(src_nodes, sample_num, neighbor_dict):
     """根据源节点进行一阶采样
 
         Inputs:
         -------
         src_nodes: list or numpy array, 源节点列表
         sample_num: int, 需采样的邻居节点数量
-        neighbor_table: dict, 节点到其邻居节点的映射表
+        neighbor_dict: dict, 节点到其邻居节点的映射表
 
         Output:
         -------
@@ -27,20 +27,20 @@ def sampling(src_nodes, sample_num, neighbor_table):
     sampling_results = []
     for node in src_nodes:
         # 从节点的邻居中进行有放回采样
-        sample = np.random.choice(neighbor_table[node], size=(sample_num,))
+        sample = np.random.choice(neighbor_dict[node], size=(sample_num,))
         sampling_results.append(sample)
 
     return np.asarray(sampling_results).flatten()
 
 
-def multihop_sampling(src_nodes, sample_nums, neighbor_table):
+def multihop_sampling(src_nodes, sample_nums, neighbor_dict):
     """根据源节点进行多阶采样
 
         Inputs:
         -------
         src_nodes: list or numpy array, 源节点列表
         sample_nums: list of ints, 每一阶需采样的邻居节点数量
-        neighbor_table: dict, 节点到其邻居节点的映射表
+        neighbor_dict: dict, 节点到其邻居节点的映射表
 
         Output:
         -------
@@ -51,7 +51,7 @@ def multihop_sampling(src_nodes, sample_nums, neighbor_table):
     sampling_results = [src_nodes]
     for k, hopk_num in enumerate(sample_nums):
         # 对每一阶进行邻居采样
-        hopk_sampling = sampling(sampling_results[k], hopk_num, neighbor_table)
+        hopk_sampling = sampling(sampling_results[k], hopk_num, neighbor_dict)
         sampling_results.append(hopk_sampling)
 
     return sampling_results
