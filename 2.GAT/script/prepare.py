@@ -12,7 +12,7 @@ import torch
 import scipy
 import numpy as np
 
-from .utils import Data
+from .utils import *
 
 
 def normalization(adjacency):
@@ -39,7 +39,7 @@ def normalization(adjacency):
     return norm_adjacency
 
 
-def prepare_data(cora):
+def prepare_data(cora, sparse=False):
     """Cora数据预处理
 
         1. 归一化节点特征
@@ -56,30 +56,31 @@ def prepare_data(cora):
               test_mask: numpy array, 测试集样本mask
               train_mask: numpy array, 训练集样本mask
               valid_mask: numpy array, 验证集样本mask
+        sparse: boolean, 是否使用稀疏矩阵
 
         Output:
         -------
         dataset: Data, 包含的元素为:
                  X: tensor, 归一化后的节点特征
                  y: tensor, 节点类别标签
-                 adjacency: sparse tensor, 正则化后的邻接矩阵
-                 test_mask: tensor, 测试集样本mask
-                 train_mask: tensor, 训练集样本mask
-                 valid_mask: tensor, 验证集样本mask
+                 adjacency: tensor, 正则化后的邻接矩阵
+                 test_index: tensor, 测试集样本索引
+                 train_index: tensor, 训练集样本索引
+                 valid_index: tensor, 验证集样本索引
 
     """
 
     # 节点特征归一化
     X = cora.data.X / cora.data.X.sum(1, keepdims=True)
-    X = torch.from_numpy(X)
+    X = torch.FloatTensor(X)
 
     # 节点标签
-    y = torch.from_numpy(cora.data.y)
+    y = torch.LongTensor(cora.data.y)
 
-    # 节点划分
-    test_mask = torch.from_numpy(cora.data.test_mask)
-    train_mask = torch.from_numpy(cora.data.train_mask)
-    valid_mask = torch.from_numpy(cora.data.valid_mask)
+    # 各数据划分样本索引
+    test_index = torch.LongTensor(np.where(cora.data.test_mask)[0])
+    train_index = torch.LongTensor(np.where(cora.data.train_mask)[0])
+    valid_index = torch.LongTensor(np.where(cora.data.valid_mask)[0])
 
     # 邻接矩阵正则化
     norm_adjacency = normalization(cora.data.adjacency)
@@ -88,17 +89,21 @@ def prepare_data(cora):
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
     adjacency = torch.sparse.FloatTensor(indices, values, (2708, 2708))
 
+    if not sparse:
+        # 不使用稀疏矩阵
+        adjacency = adjacency.to_dense()
+
     # 数据加载至的设备
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # 合并数据
-    dataset = Data(
+    dataset = PrepData(
         X=X.to(device),
         y=y.to(device),
         adjacency=adjacency.to(device),
-        test_mask=test_mask.to(device),
-        train_mask=train_mask.to(device),
-        valid_mask=valid_mask.to(device)
+        test_index=test_index.to(device),
+        train_index=train_index.to(device),
+        valid_index=valid_index.to(device)
     )
 
     return dataset

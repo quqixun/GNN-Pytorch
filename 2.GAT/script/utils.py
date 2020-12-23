@@ -26,3 +26,17 @@ Data = namedtuple(
         'valid_mask'   # 验证集样本mask
     ]
 )
+
+
+# 定义预处理后的数据结构
+PrepData = namedtuple(
+    typename='PrepData',
+    field_names=[
+        'X',              # 节点特征
+        'y',              # 节点类别标签
+        'adjacency',      # 邻接矩阵
+        'test_index',     # 测试集样本索引
+        'train_index',    # 训练集样本索引
+        'valid_index'     # 验证集样本索引
+    ]
+)
