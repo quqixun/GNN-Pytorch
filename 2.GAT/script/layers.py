@@ -44,8 +44,11 @@ class GraphAttentionLayer(nn.Module):
         """初始化权重
         """
 
-        nn.init.kaiming_normal_(self.W)
-        nn.init.kaiming_normal_(self.a)
+        # nn.init.kaiming_normal_(self.W)
+        # nn.init.kaiming_normal_(self.a)
+
+        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        nn.init.xavier_uniform_(self.a.data, gain=1.414)
 
         return
 
@@ -71,8 +74,8 @@ class GraphAttentionLayer(nn.Module):
         Whij = torch.cat([Whi, Whj], dim=1)
         Whij = Whij.view(num_nodes, num_nodes, 2 * self.output_dim)
 
-        e = self.lrelu(torch.matmul(self.a, Whij).squeeze(2))
-        attention = torch.where(adjacency > 0, e, torch.zero_like(e))
+        e = self.lrelu(torch.matmul(Whij, self.a).squeeze(2))
+        attention = torch.where(adjacency > 0, e, torch.zeros_like(e))
         attention = self.softmax(attention)
         attention = self.dropout(attention)
 
