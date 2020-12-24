@@ -33,10 +33,9 @@ class GAT(nn.Module):
         self.dropout2 = nn.Dropout(p=dropout)
         self.log_softmax = nn.LogSoftmax(dim=1)
 
-        self.attentions = [GraphAttentionLayer(input_dim, hidden_dim, dropout, alpha, True)
-                           for _ in range(num_heads)]
-        for i, attention in enumerate(self.attentions):
-            self.add_module('attention_{}'.format(i), attention)
+        self.attentions = nn.ModuleList()
+        for _ in range(num_heads):
+            self.attentions.append(GraphAttentionLayer(input_dim, hidden_dim, dropout, alpha, True))
 
         self.output = GraphAttentionLayer(num_heads * hidden_dim, output_dim, dropout, alpha, False)
 
@@ -58,7 +57,7 @@ class GAT(nn.Module):
         """
 
         out = self.dropout1(X)
-        out = torch.cat([attention(adjacency, X) for attention in self.attentions], dim=1)
+        out = torch.cat([attention(adjacency, out) for attention in self.attentions], dim=1)
         out = self.dropout2(out)
         out = self.output(adjacency, out)
         out = self.log_softmax(self.elu(out))

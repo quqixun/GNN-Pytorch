@@ -15,7 +15,7 @@ import numpy as np
 from .utils import *
 
 
-def normalization(adjacency):
+def normalize_adjacency(adjacency):
     """邻接矩阵正则化
 
         L = D^-0.5 * (A + I) * D^-0.5
@@ -33,7 +33,9 @@ def normalization(adjacency):
 
     adjacency += scipy.sparse.eye(adjacency.shape[0])
     degree = np.array(adjacency.sum(1))
-    d_hat = scipy.sparse.diags(np.power(degree, -0.5).flatten())
+    d_hat = np.power(degree, -0.5).flatten()
+    d_hat[np.isinf(d_hat)] = 0.0
+    d_hat = scipy.sparse.diags(d_hat)
     norm_adjacency = d_hat.dot(adjacency).dot(d_hat).tocoo()
 
     return norm_adjacency
@@ -83,7 +85,7 @@ def prepare_data(cora, sparse=False):
     valid_index = torch.LongTensor(np.where(cora.data.valid_mask)[0])
 
     # 邻接矩阵正则化
-    norm_adjacency = normalization(cora.data.adjacency)
+    norm_adjacency = normalize_adjacency(cora.data.adjacency)
     indices = np.asarray([norm_adjacency.row, norm_adjacency.col])
     indices = torch.from_numpy(indices.astype(int)).long()
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))

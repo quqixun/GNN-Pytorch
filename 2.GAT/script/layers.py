@@ -75,7 +75,7 @@ class GraphAttentionLayer(nn.Module):
         Whij = Whij.view(num_nodes, num_nodes, 2 * self.output_dim)
 
         e = self.lrelu(torch.matmul(Whij, self.a).squeeze(2))
-        attention = torch.where(adjacency > 0, e, torch.zeros_like(e))
+        attention = torch.where(adjacency > 0, e, -9e15 * torch.ones_like(e))
         attention = self.softmax(attention)
         attention = self.dropout(attention)
 

@@ -60,8 +60,6 @@ class Pipeline(object):
         if torch.cuda.is_available():
             self.model.cuda()
 
-        print(self.model)
-
         return
 
     def __build_components(self, **hyper_params):
@@ -77,7 +75,8 @@ class Pipeline(object):
         self.patience = hyper_params['patience']
 
         # 定义损失函数
-        self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.NLLLoss()
 
         # 定义优化器
         self.optimizer = optim.Adam(
