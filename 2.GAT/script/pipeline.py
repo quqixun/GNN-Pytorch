@@ -135,8 +135,8 @@ class Pipeline(object):
                 # 从新计数轮次
                 epochs_after_best = 0
             else:
-                # 获得最佳验证集准确率
-                # 增加技术轮次
+                # 未获得最佳验证集准确率
+                # 增加计数轮次
                 epochs_after_best += 1
 
             if epochs_after_best == self.patience:
