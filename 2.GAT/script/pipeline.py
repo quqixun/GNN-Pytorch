@@ -10,7 +10,7 @@ from .model import GAT
 
 
 class Pipeline(object):
-    """GCN模型训练与预测
+    """GAT模型训练与预测
     """
 
     def __init__(self, **params):
@@ -32,10 +32,10 @@ class Pipeline(object):
                             'alpha': 0.2
                         },
                         'hyper': {
-                            'lr': 3e-3,           # 优化器初始学习率
-                            'epochs': 10,         # 训练轮次
-                            'patience': 100,      # 早停轮次
-                            'weight_decay': 5e-4  # 优化器权重衰减
+                            'lr': 3e-3,
+                            'epochs': 10,
+                            'patience': 100,
+                            'weight_decay': 5e-4
                         }
                     }
 
@@ -75,8 +75,7 @@ class Pipeline(object):
         self.patience = hyper_params['patience']
 
         # 定义损失函数
-        # self.criterion = nn.CrossEntropyLoss()
-        self.criterion = nn.NLLLoss()
+        self.criterion = nn.CrossEntropyLoss()
 
         # 定义优化器
         self.optimizer = optim.Adam(
@@ -99,6 +98,9 @@ class Pipeline(object):
 
         # 训练集标签
         train_y = dataset.y[dataset.train_index]
+
+        best_valid_acc = 0
+        epochs_after_best = 0
 
         for epoch in range(self.epochs):
             # 模型训练模式
@@ -123,6 +125,15 @@ class Pipeline(object):
 
             print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
                 epoch, loss, train_acc, valid_acc))
+
+            if valid_acc > best_valid_acc:
+                best_valid_acc = valid_acc
+                epochs_after_best = 0
+            else:
+                epochs_after_best += 1
+
+            if epochs_after_best == self.patience:
+                break
 
         return
 

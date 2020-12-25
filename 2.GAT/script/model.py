@@ -28,10 +28,8 @@ class GAT(nn.Module):
 
         super(GAT, self).__init__()
 
-        self.elu = nn.ELU(inplace=True)
         self.dropout1 = nn.Dropout(p=dropout)
         self.dropout2 = nn.Dropout(p=dropout)
-        self.log_softmax = nn.LogSoftmax(dim=1)
 
         self.attentions = nn.ModuleList()
         for _ in range(num_heads):
@@ -53,13 +51,11 @@ class GAT(nn.Module):
             -------
             output: tensor, 输出
 
-
         """
 
         out = self.dropout1(X)
         out = torch.cat([attention(adjacency, out) for attention in self.attentions], dim=1)
         out = self.dropout2(out)
-        out = self.output(adjacency, out)
-        out = self.log_softmax(self.elu(out))
+        output = self.output(adjacency, out)
 
-        return out
+        return output

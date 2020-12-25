@@ -44,11 +44,8 @@ class GraphAttentionLayer(nn.Module):
         """初始化权重
         """
 
-        # nn.init.kaiming_normal_(self.W)
-        # nn.init.kaiming_normal_(self.a)
-
-        nn.init.xavier_uniform_(self.W.data, gain=1.414)
-        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+        nn.init.kaiming_normal_(self.W)
+        nn.init.kaiming_normal_(self.a)
 
         return
 
