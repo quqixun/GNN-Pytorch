@@ -15,7 +15,7 @@ import numpy as np
 from .utils import Data
 
 
-def normalization(adjacency):
+def normalize_adjacency(adjacency):
     """邻接矩阵正则化
 
         L = D^-0.5 * (A + I) * D^-0.5
@@ -82,7 +82,7 @@ def prepare_data(cora):
     valid_mask = torch.from_numpy(cora.data.valid_mask)
 
     # 邻接矩阵正则化
-    norm_adjacency = normalization(cora.data.adjacency)
+    norm_adjacency = normalize_adjacency(cora.data.adjacency)
     indices = np.asarray([norm_adjacency.row, norm_adjacency.col])
     indices = torch.from_numpy(indices.astype(int)).long()
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
