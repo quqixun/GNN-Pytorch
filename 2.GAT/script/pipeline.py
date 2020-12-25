@@ -99,7 +99,10 @@ class Pipeline(object):
         # 训练集标签
         train_y = dataset.y[dataset.train_index]
 
+        # 记录最佳的验证集准确率
         best_valid_acc = 0
+
+        # 获得最佳的验证集后计数轮次
         epochs_after_best = 0
 
         for epoch in range(self.epochs):
@@ -127,12 +130,17 @@ class Pipeline(object):
                 epoch, loss, train_acc, valid_acc))
 
             if valid_acc > best_valid_acc:
+                # 获得最佳验证集准确率
                 best_valid_acc = valid_acc
+                # 从新计数轮次
                 epochs_after_best = 0
             else:
+                # 获得最佳验证集准确率
+                # 增加技术轮次
                 epochs_after_best += 1
 
             if epochs_after_best == self.patience:
+                # 符合早停条件
                 break
 
         return
@@ -142,8 +150,8 @@ class Pipeline(object):
 
             Inputs:
             -------
-            dataset: Data, Data, 包含X, y, adjacency, test_mask,
-                     train_mask和valid_mask
+            dataset: Data, Data, 包含X, y, adjacency, test_index,
+                     train_index和valid_index
             split: string, 待预测的节点
 
             Output:
@@ -155,7 +163,7 @@ class Pipeline(object):
         # 模型推断模式
         self.model.eval()
 
-        # 节点mask
+        # 节点索引
         if split == 'train':
             index = dataset.train_index
         elif split == 'valid':

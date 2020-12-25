@@ -31,6 +31,7 @@ class GAT(nn.Module):
         self.dropout1 = nn.Dropout(p=dropout)
         self.dropout2 = nn.Dropout(p=dropout)
 
+        # 多头注意力层
         self.attentions = nn.ModuleList()
         for _ in range(num_heads):
             self.attentions.append(GraphAttentionLayer(input_dim, hidden_dim, dropout, alpha, True))
@@ -54,6 +55,7 @@ class GAT(nn.Module):
         """
 
         out = self.dropout1(X)
+        # 拼接多头注意力层输出
         out = torch.cat([attention(adjacency, out) for attention in self.attentions], dim=1)
         out = self.dropout2(out)
         output = self.output(adjacency, out)

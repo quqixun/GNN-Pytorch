@@ -28,7 +28,9 @@ class GraphAttentionLayer(nn.Module):
         self.activate = activate
         self.output_dim = output_dim
 
+        # 节点特征线性变换
         self.W = nn.Parameter(torch.Tensor(input_dim, output_dim))
+        # 邻接矩阵线性变换，计算attention
         self.a = nn.Parameter(torch.Tensor(2 * output_dim, 1))
 
         self.elu = nn.ELU(inplace=True)
@@ -63,19 +65,29 @@ class GraphAttentionLayer(nn.Module):
 
         """
 
+        # 节点个数
         num_nodes = X.size(0)
 
+        # 节点特征线性变换
         Wh = torch.mm(X, self.W)
+
+        # 按邻接矩阵顺序, 组合一条边的两个节点特征
+        # Whi: n1, n1, ..., n1, n2, n2, ..., n2, nN, nN, ..., nN
+        #      |<--   N   -->|  |<--   N   -->|  |<--   N   -->|
+        # Whj: n1, n2, ..., nN, n1, n2, ..., nN, ..., n1, n2, ..., nN,
+        #      |<--   N   -->|  |<--   N   -->|       |<--   N   -->|
         Whi = Wh.repeat_interleave(num_nodes, dim=0)
         Whj = Wh.repeat(num_nodes, 1)
         Whij = torch.cat([Whi, Whj], dim=1)
         Whij = Whij.view(num_nodes, num_nodes, 2 * self.output_dim)
 
+        # 计算attention
         e = self.lrelu(torch.matmul(Whij, self.a).squeeze(2))
         attention = torch.where(adjacency > 0, e, -9e15 * torch.ones_like(e))
         attention = self.softmax(attention)
         attention = self.dropout(attention)
 
+        # 更新节点特征
         h_prime = torch.matmul(attention, Wh)
         if self.activate:
             h_prime = self.elu(h_prime)
