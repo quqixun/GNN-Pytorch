@@ -33,3 +33,4 @@ if __name__ == '__main__':
     # 测试集准确率
     test_acc = pipeline.predict(dataset, 'test')
     print('Test Accuracy: {:.6f}'.format(test_acc))
+    # Test Accuracy: 0.801

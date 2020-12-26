@@ -20,7 +20,7 @@ if __name__ == '__main__':
         },
         'hyper': {
             'lr': 1e-2,           # 优化器初始学习率
-            'epochs': 100,        # 训练轮次
+            'epochs': 200,        # 训练轮次
             'weight_decay': 5e-4  # 优化器权重衰减
         }
     }
@@ -32,3 +32,4 @@ if __name__ == '__main__':
     # 测试集准确率
     test_acc = pipeline.predict(dataset, 'test')
     print('Test Accuracy: {:.6f}'.format(test_acc))
+    # Test Accuracy: 0.819

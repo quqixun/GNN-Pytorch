@@ -2,6 +2,7 @@
 """
 
 
+import copy
 import torch
 import random
 import numpy as np
@@ -121,6 +122,11 @@ class Pipeline(object):
 
         """
 
+        best_model = None
+
+        # 记录最佳的验证集准确率
+        best_valid_acc = 0
+
         for epoch in range(self.epochs):
             # 模型训练模式
             self.model.train()
@@ -159,6 +165,13 @@ class Pipeline(object):
 
             print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
                 epoch, epoch_loss, train_acc, valid_acc))
+
+            if valid_acc >= best_valid_acc:
+                best_model = copy.deepcopy(self.model)
+                # 获得最佳验证集准确率
+                best_valid_acc = valid_acc
+
+        self.model = best_model
 
         return
 
