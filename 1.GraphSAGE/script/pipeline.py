@@ -3,6 +3,7 @@
 
 
 import torch
+import random
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
@@ -43,8 +44,26 @@ class Pipeline(object):
         # 获取可用的计算设备
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+        self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
+
+        return
+
+    def __init_environment(self, random_state):
+        """初始化环境
+
+            Input:
+            ------
+            random_state: int, 随机种子
+
+        """
+
+        random.seed(random_state)
+        np.random.seed(random_state)
+        torch.manual_seed(random_state)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
         return
 
