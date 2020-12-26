@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     # 训练参数
     params = {
+        'random_state': 42,            # 随机种子
         'model': {
             'input_dim': 1433,              # 节点特征维度
             'hidden_dims': [128, 7],        # 隐层输出特征维度
