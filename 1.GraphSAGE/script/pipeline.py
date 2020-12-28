@@ -27,16 +27,16 @@ class Pipeline(object):
             params: dict, 模型参数和超参数, 格式为:
                     {
                         'model': {
-                            'input_dim': 1433,              # 节点特征维度
-                            'hidden_dims': [128, 7],        # 隐层输出特征维度
-                            'num_neighbors_list': [10, 10]  # 没接采样邻居的节点数
+                            'input_dim': 1433,
+                            'hidden_dims': [128, 7],
+                            'num_neighbors_list': [10, 10]
                         },
                         'hyper': {
-                            'lr': 3e-3,                # 优化器初始学习率
-                            'epochs': 10,              # 训练轮次
-                            'batch_size': 16,          # 批数据大小
-                            'weight_decay': 5e-4,      # 优化器权重衰减
-                            'num_batch_per_epoch': 20  # 每个epoch循环的批次数
+                            'lr': 3e-3,
+                            'epochs': 10,
+                            'batch_size': 16,
+                            'weight_decay': 5e-4,
+                            'num_batch_per_epoch': 20
                         }
                     }
 

@@ -1,8 +1,7 @@
-"""Cora数据集预处理
+"""数据集的下载、存储与预处理
 
-    Cora数据集的下载、存储与预处理,
-    原始数据集存储路径: $output_dir/raw
-    预处理数据集存储路径: $output_dir/processed_cora.pkl
+    原始数据集的下载、存储与预处理,
+    原始数据集存储路径: $dataset_root/$data
 
 """
 
@@ -17,71 +16,63 @@ from itertools import groupby
 from scipy.sparse import coo_matrix
 
 
-class CoraData(object):
-    """Cora数据集的下载、存储与预处理
+class Dataset(object):
+    """数据集的下载、存储与预处理
 
-        原始Cora数据集的下载、存储与预处理,
-        原始数据集存储路径: $output_dir/raw
-        预处理数据集存储路径: $output_dir/processed_cora.pkl
+        原始数据集的下载、存储与预处理,
+        原始数据集存储路径: $dataset_root/$data
 
     """
 
     url_root = 'https://github.com/kimiyoung/planetoid/raw/master/data'
     files = [
-        'ind.cora.x', 'ind.cora.tx', 'ind.cora.allx',
-        'ind.cora.y', 'ind.cora.ty', 'ind.cora.ally',
-        'ind.cora.graph', 'ind.cora.test.index'
+        'ind.{}.x', 'ind.{}.tx', 'ind.{}.allx',
+        'ind.{}.y', 'ind.{}.ty', 'ind.{}.ally',
+        'ind.{}.graph', 'ind.{}.test.index'
     ]
 
-    def __init__(self, output_dir, rebuild=False):
-        """CoraData初始化
+    def __init__(self, data, dataset_root):
+        """Dataset初始化
 
-            原始Cora数据集的下载、存储与预处理,
-            原始数据集存储路径: $output_dir/raw
-            预处理数据集存储路径: $output_dir/processed_cora.pkl
+            原始数据集的下载、存储与预处理,
+            原始数据集存储路径: $dataset_root/$data
 
             Inputs:
             -------
-            output_dir: string, 数据集保存文件夹路径
-            rebuild: boolean, 是否重新生成Cora数据集
+            data: string, 使用的数据集名称, ['cora', 'pubmed', 'citeseer']
+            dataset_root: string, 数据集保存根文件夹路径
 
         """
 
-        self.raw_dir = os.path.join(output_dir, 'raw')
-        self.prep_file = os.path.join(output_dir, 'processed_cora.pkl')
+        assert data in ['cora', 'pubmed', 'citeseer'], 'uknown dataset'
 
-        if os.path.isfile(self.prep_file) and not rebuild:
-            # 预处理Cora数据集已存在且不更新
-            print('Using Cached File:', self.prep_file)
-            self.data = pickle.load(open(self.prep_file, 'rb'))
-        else:
-            # 预处理Cora数据集不存在或更新现有数据集
-            print('Downloading and Preprocessing Cora Dataset ...')
-            self.__download_data()
-            self.data = self.__process_data()
+        self.data = data
+        self.data_dir = os.path.join(dataset_root, data)
 
-            print('Cached File:', self.prep_file)
-            with open(self.prep_file, 'wb') as f:
-                pickle.dump(self.data, f)
+        # 预处理数据集不存在或更新现有数据集
+        print('Downloading and Preprocessing [{}] Dataset ...'.format(data.upper()))
+        self.__download_data()
+        self.data = self.__process_data()
 
         return
 
     # ------------------------------------------------------------------------
-    # 下载Cora数据集
+    # 下载数据集
 
     def __download_data(self):
-        """下载原始Cora数据集
+        """下载原始数据集
 
-            分别下载各数据文件, 保存至self.raw_dir文件夹
+            分别下载各数据文件, 保存至self.data_dir文件夹
 
         """
 
-        # 生成self.raw_dir文件夹
-        create_dir(self.raw_dir)
+        # 生成self.data_dir文件夹
+        create_dir(self.data_dir)
 
         for name in self.files:
             # 遍历各数据文件
-            file = os.path.join(self.raw_dir, name)
+            name = name.format(self.data)
+            file = os.path.join(self.data_dir, name)
             if not os.path.isfile(file):
                 # 若数据文件不存在则下载文件
                 url = '{}/{}'.format(self.url_root, name)
@@ -114,16 +105,16 @@ class CoraData(object):
         return
 
     # ------------------------------------------------------------------------
-    # 预处理Cora数据集
+    # 预处理数据集
 
     def __process_data(self):
-        """Cora数据处理
+        """数据处理
 
             处理数据, 得到节点特征和标签, 邻接矩阵, 训练集, 验证集及测试集
 
             Output:
             -------
-            dataset: Data tuple, 预处理后的Cora数据集, 包含的元素为:
+            dataset: Data tuple, 预处理后的数据集, 包含的元素为:
                      X: numpy array, 节点特征
                      y: numpy array, 节点类别标签
                      adjacency: sparse numpy array, 邻接矩阵
@@ -135,7 +126,7 @@ class CoraData(object):
 
         # 读取数据
         _, tx, allx, y, ty, ally, graph, test_index = \
-            [self.read_data(os.path.join(self.raw_dir, file)) for file in self.files]
+            [self.read_data(os.path.join(self.data_dir, file.format(self.data))) for file in self.files]
 
         # 训练集与验证集样本索引
         train_index = np.arange(len(y))
@@ -144,6 +135,13 @@ class CoraData(object):
         # 合并其他样本与测试集样本
         X = np.concatenate([allx, tx], axis=0)
         y = np.concatenate([ally, ty], axis=0).argmax(axis=1)
+
+        if self.data == 'citeseer':
+            # 对citeseer数据集做特殊处理
+            # 根据图结构建立邻接矩阵
+            adjacency = self.build_adjacency(graph)
+            num_nodes = adjacency.shape[0]
+            test_index, graph = self.__citeseer(tx, test_index, graph, num_nodes)
 
         # 测试集样本按顺序排列
         sorted_test_index = sorted(test_index)
@@ -186,7 +184,7 @@ class CoraData(object):
         """
 
         file_name = os.path.basename(file)
-        if file_name == 'ind.cora.test.index':
+        if 'test.index' in file_name:
             content = np.genfromtxt(file, dtype='int64')
         else:
             content = pickle.load(open(file, 'rb'), encoding='latin1')
@@ -229,3 +227,63 @@ class CoraData(object):
         ), shape=(num_nodes, num_nodes), dtype=float)
 
         return adjacency
+
+    def __citeseer(self, tx, test_index, graph, num_nodes):
+        """对citeseer数据集做特殊处理
+
+            citeseer测试集中缺少若干节点, 需要将缺失的节点从邻接矩阵中删除,
+            并更新测试集节点索引
+
+            Inputs:
+            -------
+            tx: numpy array, 测试集特征
+            test_index: numpy array, 测试集节点索引列表
+            graph: dict, 图网络字典
+            num_nodes: int, 原图中所有节点个数
+
+            Outputs:
+            --------
+            test_index: numpy array, 更新后的测试集节点索引
+            adjacency: sparse array, 跟新后的邻接矩阵
+
+        """
+
+        # 获取测试集中缺失的节点索引
+        full_test = list(range(min(test_index), num_nodes))
+        missing = [index for index in full_test if index not in test_index]
+
+        # 重新排序测试集索引, 以排列顺序对测试集节点重新赋予索引, 并建立新旧索引间的映射关系
+        new_test_index = list(range(min(test_index), min(test_index) + len(tx)))
+        test_index_dict = {s: n for s, n in zip(sorted(test_index), new_test_index)}
+        test_index = [test_index_dict[t] for t in test_index]
+
+        # 更新测试集节点索引后, 重新建立图
+        new_graph = {}
+
+        for key, values in graph.items():
+            # 遍历原图中的每个中心节点及其邻居
+
+            # 在邻居列表中, 删除缺失的测试集节点
+            values = [v for v in values if v not in missing]
+            if (key in missing) or (len(values) == 0):
+                # 若中心节点为缺失的测试集节点, 或中心节点的邻居仅包含缺失的测试集节点
+                # 则删除此中心节点及其邻居
+                continue
+
+            if key in test_index_dict.keys():
+                # 更新测试集节点索引
+                key = test_index_dict[key]
+
+            new_values = []
+            for v in values:
+                if v in test_index_dict.keys():
+                    # 更新测试集节点邻居索引
+                    new_values.append(test_index_dict[v])
+                else:
+                    # 保留其他节点邻居索引
+                    new_values.append(v)
+
+            # 将更新后的中心节点及其邻居
+            new_graph[key] = new_values
+
+        return test_index, new_graph

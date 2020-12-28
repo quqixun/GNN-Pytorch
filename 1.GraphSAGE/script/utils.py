@@ -3,6 +3,7 @@
 
 
 import os
+import yaml
 
 from collections import namedtuple
 
@@ -40,3 +41,18 @@ PrepData = namedtuple(
         'adjacency_dict'  # 节点邻居字典
     ]
 )
+
+
+# 加载全局配置
+def load_config(config_file):
+    """加载全局配置
+
+        加载模型参数和训练超参数, 用于不同的数据集训练模型
+
+    """
+
+    with open(config_file, 'r', encoding='utf-8') as f:
+        # 读取yaml文件内容
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    return config
