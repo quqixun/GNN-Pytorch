@@ -122,6 +122,7 @@ class Pipeline(object):
 
         """
 
+        # 记录验证集效果最佳模型
         best_model = None
 
         # 记录最佳的验证集准确率
@@ -167,10 +168,11 @@ class Pipeline(object):
                 epoch, epoch_loss, train_acc, valid_acc))
 
             if valid_acc >= best_valid_acc:
-                best_model = copy.deepcopy(self.model)
                 # 获得最佳验证集准确率
+                best_model = copy.deepcopy(self.model)
                 best_valid_acc = valid_acc
 
+        # 最终模型为验证集效果最佳的模型
         self.model = best_model
 
         return
