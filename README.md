@@ -1,11 +1,19 @@
 # GNN-Pytorch
+GNN方法和模型的Pytorch实现。
+
 <br/>
 
-一些图神经网络的实现。
+## 归纳学习
 
-- [x] [0. GCN](./0.GCN) - [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/pdf/1609.02907.pdf)
-- [x] [1. GraphSAGE](./1.GraphSAGE) - [Inductive Representation Learning on Large Graphs](https://arxiv.org/pdf/1706.02216.pdf)
-- [ ] [2. GAT](./2.GAT)
+| No.  |            方法            |        状态        |                     论文                      | Cora  | Pubmed | Citeseer |
+| :--: | :------------------------: | :----------------: | :-------------------------------------------: | :---: | :----: | :------: |
+|  0   |       [GCN](./0.GCN)       | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
+|  1   | [GraphSAGE](./1.GraphSAGE) | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
+|  2   |       [GAT](./2.GAT)       | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1710.10903.pdf) |       |        |          |
+
+<br/>
+
+## 图池化
 
 <br/>
 
