@@ -88,18 +88,17 @@ def prepare(dataset):
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
     adjacency = torch.sparse.FloatTensor(indices, values, (len(X), len(X)))
 
-    # # 数据加载至的设备
-    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # 数据加载至的设备
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    # # 合并数据
-    # dataset = Data(
-    #     X=X.to(device),
-    #     y=y.to(device),
-    #     adjacency=adjacency.to(device),
-    #     test_mask=test_mask.to(device),
-    #     train_mask=train_mask.to(device),
-    #     valid_mask=valid_mask.to(device)
-    # )
+    # 合并数据
+    dataset = Data(
+        X=X.to(device),
+        y=y.to(device),
+        adjacency=adjacency.to(device),
+        test_mask=test_mask.to(device),
+        train_mask=train_mask.to(device),
+        valid_mask=valid_mask.to(device)
+    )
 
-    # return dataset
-    return None
+    return dataset

@@ -1,36 +1,53 @@
 from script.dataset import Dataset
 from script.prepare import prepare
+from script.utils import load_config
 from script.pipeline import Pipeline
+
+
+def train_and_test(data, dataset_root, config):
+    """模型训练和测试
+
+        使用给定数据和配置训练并测试模型
+
+        Inputs:
+        -------
+        data: string, 使用的数据集名称, ['cora', 'pubmed', 'citeseer']
+        dataset_root: string, 数据集保存根文件夹路径
+        config: dict, 参数配置
+
+    """
+
+    # 数据获取和预处理
+    dataset = Dataset(data, dataset_root)
+    prep_dataset = prepare(dataset)
+
+    # 训练模型
+    pipeline = Pipeline(**config[data])
+    pipeline.train(prep_dataset)
+
+    # 测试集准确率
+    test_acc = pipeline.predict(prep_dataset, 'test')
+    print('[{}] Test Accuracy: {:.3f}\n'.format(data.upper(), test_acc))
+
+    return
 
 
 if __name__ == '__main__':
 
-    # 数据下载与预处理
-    # data可选列表['cora', 'pubmed', 'citeseer']
-    dataset = Dataset(data='citeseer', dataset_dir='../dataset')
-    # dataset = prepare(dataset)
+    # 数据集根目录
+    dataset_root = '../dataset'
 
-    # # 训练参数
-    # params = {
-    #     'random_state': 42,       # 随机种子
-    #     'model': {
-    #         'input_dim': 1433,    # 节点特征维度
-    #         'output_dim': 7,      # 节点类别数
-    #         'hidden_dim': 16,     # 隐层输出特征维度
-    #         'use_bias': True      # 是否使用偏置
-    #     },
-    #     'hyper': {
-    #         'lr': 1e-2,           # 优化器初始学习率
-    #         'epochs': 100,        # 训练轮次
-    #         'weight_decay': 5e-4  # 优化器权重衰减
-    #     }
-    # }
+    # 加载全局配置
+    config = load_config(config_file='config.yaml')
 
-    # # 训练模型
-    # pipeline = Pipeline(**params)
-    # pipeline.train(dataset)
+    # 使用Cora数据集训练和测试模型
+    train_and_test('cora', dataset_root, config)
+    # Cora Test Accuracy: 0.819
 
-    # # 测试集准确率
-    # test_acc = pipeline.predict(dataset, 'test')
-    # print('Test Accuracy: {:.6f}'.format(test_acc))
-    # # Test Accuracy: 0.819
+    # 使用Pubmed数据集训练和测试模型
+    train_and_test('pubmed', dataset_root, config)
+    # Pubmed Test Accuracy: 0.790
+
+    # 使用Citeseer数据集训练和测试模型
+    train_and_test('citeseer', dataset_root, config)
+    # Citeseer Test Accuracy: 0.702
