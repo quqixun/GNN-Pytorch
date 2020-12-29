@@ -5,11 +5,11 @@ GNN方法和模型的Pytorch实现。
 
 ## 节点分类
 
-|        状态        |             方法              |                     论文                      | Cora  | Pubmed | Citeseer |
-| :----------------: | :---------------------------: | :-------------------------------------------: | :---: | :----: | :------: |
-| :heavy_check_mark: |       [GCN](./Node/GCN)       | [Paper](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
-| :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Paper](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
-| :heavy_check_mark: |       [GAT](./Node/GAT)       | [Paper](https://arxiv.org/pdf/1710.10903.pdf) |       |        |          |
+|        状态        |             方法              |                             论文                             | Cora  | Pubmed | Citeseer |
+| :----------------: | :---------------------------: | :----------------------------------------------------------: | :---: | :----: | :------: |
+| :heavy_check_mark: |       [GCN](./Node/GCN)       | [Kipf and Welling, 2017](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
+| :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Hamilton et al., 2017](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
+| :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.822 |  OOM   |  0.710   |
 
 <br/>
 
