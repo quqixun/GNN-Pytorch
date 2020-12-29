@@ -35,19 +35,19 @@ def train_and_test(data, dataset_root, config):
 if __name__ == '__main__':
 
     # 数据集根目录
-    dataset_root = '../dataset'
+    dataset_root = '../../Dataset'
 
     # 加载全局配置
     config = load_config(config_file='config.yaml')
 
     # 使用Cora数据集训练和测试模型
     train_and_test('cora', dataset_root, config)
-    # Cora Test Accuracy: 0.819
+    # Cora Test Accuracy: 0.801
 
     # 使用Pubmed数据集训练和测试模型
     train_and_test('pubmed', dataset_root, config)
-    # Pubmed Test Accuracy: 0.790
+    # Pubmed Test Accuracy: 0.778
 
     # 使用Citeseer数据集训练和测试模型
     train_and_test('citeseer', dataset_root, config)
-    # Citeseer Test Accuracy: 0.702
+    # Citeseer Test Accuracy: 0.701

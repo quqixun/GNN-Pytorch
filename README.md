@@ -3,13 +3,13 @@ GNN方法和模型的Pytorch实现。
 
 <br/>
 
-## 归纳学习
+## 节点分类
 
-| No.  |            方法            |        状态        |                     论文                      | Cora  | Pubmed | Citeseer |
-| :--: | :------------------------: | :----------------: | :-------------------------------------------: | :---: | :----: | :------: |
-|  0   |       [GCN](./0.GCN)       | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
-|  1   | [GraphSAGE](./1.GraphSAGE) | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
-|  2   |       [GAT](./2.GAT)       | :heavy_check_mark: | [Paper](https://arxiv.org/pdf/1710.10903.pdf) |       |        |          |
+|        状态        |             方法              |                     论文                      | Cora  | Pubmed | Citeseer |
+| :----------------: | :---------------------------: | :-------------------------------------------: | :---: | :----: | :------: |
+| :heavy_check_mark: |       [GCN](./Node/GCN)       | [Paper](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
+| :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Paper](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
+| :heavy_check_mark: |       [GAT](./Node/GAT)       | [Paper](https://arxiv.org/pdf/1710.10903.pdf) |       |        |          |
 
 <br/>
 
