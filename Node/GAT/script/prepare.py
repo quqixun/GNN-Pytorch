@@ -1,4 +1,4 @@
-"""Cora数据预处理
+"""数据预处理
 
     1. 归一化节点特征
     2. 将节点划分为训练集、验证集和测试集
@@ -41,8 +41,8 @@ def normalize_adjacency(adjacency):
     return norm_adjacency
 
 
-def prepare_data(cora, sparse=False):
-    """Cora数据预处理
+def prepare(dataset):
+    """数据预处理
 
         1. 归一化节点特征
         2. 将节点划分为训练集、验证集和测试集
@@ -51,14 +51,13 @@ def prepare_data(cora, sparse=False):
 
         Input:
         ------
-        cora: Data, 包含的元素为:
-              X: numpy array, 节点特征
-              y: numpy array, 节点类别标签
-              adjacency: sparse numpy array, 邻接矩阵
-              test_mask: numpy array, 测试集样本mask
-              train_mask: numpy array, 训练集样本mask
-              valid_mask: numpy array, 验证集样本mask
-        sparse: boolean, 是否使用稀疏矩阵
+        dataset: Data, 包含的元素为:
+                 X: numpy array, 节点特征
+                 y: numpy array, 节点类别标签
+                 adjacency: sparse numpy array, 邻接矩阵
+                 test_mask: numpy array, 测试集样本mask
+                 train_mask: numpy array, 训练集样本mask
+                 valid_mask: numpy array, 验证集样本mask
 
         Output:
         -------
@@ -73,27 +72,24 @@ def prepare_data(cora, sparse=False):
     """
 
     # 节点特征归一化
-    X = cora.data.X / cora.data.X.sum(1, keepdims=True)
+    X = dataset.data.X / dataset.data.X.sum(1, keepdims=True)
     X = torch.FloatTensor(X)
 
     # 节点标签
-    y = torch.LongTensor(cora.data.y)
+    y = torch.LongTensor(dataset.data.y)
 
     # 各数据划分样本索引
-    test_index = torch.LongTensor(np.where(cora.data.test_mask)[0])
-    train_index = torch.LongTensor(np.where(cora.data.train_mask)[0])
-    valid_index = torch.LongTensor(np.where(cora.data.valid_mask)[0])
+    test_index = torch.LongTensor(np.where(dataset.data.test_mask)[0])
+    train_index = torch.LongTensor(np.where(dataset.data.train_mask)[0])
+    valid_index = torch.LongTensor(np.where(dataset.data.valid_mask)[0])
 
     # 邻接矩阵正则化
-    norm_adjacency = normalize_adjacency(cora.data.adjacency)
+    norm_adjacency = normalize_adjacency(dataset.data.adjacency)
     indices = np.asarray([norm_adjacency.row, norm_adjacency.col])
     indices = torch.from_numpy(indices.astype(int)).long()
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
-    adjacency = torch.sparse.FloatTensor(indices, values, (2708, 2708))
-
-    if not sparse:
-        # 不使用稀疏矩阵
-        adjacency = adjacency.to_dense()
+    adjacency = torch.sparse.FloatTensor(indices, values, (len(X), len(X)))
+    adjacency = adjacency.to_dense()
 
     # 数据加载至的设备
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

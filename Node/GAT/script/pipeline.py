@@ -25,7 +25,6 @@ class Pipeline(object):
             ------
             params: dict, 模型参数和超参数, 格式为:
                     params = {
-                        'sparse': False,
                         'model': {
                             'input_dim': 1433,
                             'hidden_dim': 8,
@@ -44,7 +43,6 @@ class Pipeline(object):
 
         """
 
-        self.sparse = params['sparse']
         self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
