@@ -43,6 +43,7 @@ class Pipeline(object):
 
         """
 
+        self.sparse = params['sparse']
         self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
@@ -75,7 +76,7 @@ class Pipeline(object):
 
         """
 
-        self.model = GAT(**model_params)
+        self.model = GAT(sparse=self.sparse, **model_params)
         if torch.cuda.is_available():
             self.model.cuda()
 

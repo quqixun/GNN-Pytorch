@@ -25,9 +25,9 @@ def train_and_test(data, dataset_root, config):
     pipeline = Pipeline(**config[data])
     pipeline.train(prep_dataset)
 
-    # 测试集准确率
-    test_acc = pipeline.predict(prep_dataset, 'test')
-    print('[{}] Test Accuracy: {:.3f}\n'.format(data.upper(), test_acc))
+    # # 测试集准确率
+    # test_acc = pipeline.predict(prep_dataset, 'test')
+    # print('[{}] Test Accuracy: {:.3f}\n'.format(data.upper(), test_acc))
 
     return
 
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     # Pubmed Test Accuracy: OOM
 
     # 使用Citeseer数据集训练和测试模型
-    train_and_test('citeseer', dataset_root, config)
+    # train_and_test('citeseer', dataset_root, config)
     # Citeseer Test Accuracy: 0.710

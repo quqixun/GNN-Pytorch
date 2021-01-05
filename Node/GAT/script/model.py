@@ -5,15 +5,15 @@
 import torch
 import torch.nn as nn
 
-from .layers import GraphAttentionLayer
+from .layers import GraphAttentionLayer, SparseGraphAttentionLayer
 
 
 class GAT(nn.Module):
-    """定义GAT网络 (dense input)
+    """定义GAT网络
     """
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_heads, dropout, alpha):
-        """定义GAT网络 (dense input)
+    def __init__(self, input_dim, hidden_dim, output_dim, num_heads, dropout, alpha, sparse=False):
+        """定义GAT网络
 
             Inputs:
             -------
@@ -26,22 +26,31 @@ class GAT(nn.Module):
 
         """
 
+        print('sparse', sparse)
+
         super(GAT, self).__init__()
 
         self.dropout1 = nn.Dropout(p=dropout)
         self.dropout2 = nn.Dropout(p=dropout)
 
+        if sparse:
+            # 使用稀疏数据的attention层
+            attention_layer = SparseGraphAttentionLayer
+        else:
+            # 使用稠密数据的attention层
+            attention_layer = GraphAttentionLayer
+
         # 多头注意力层
         self.attentions = nn.ModuleList()
         for _ in range(num_heads):
-            self.attentions.append(GraphAttentionLayer(input_dim, hidden_dim, dropout, alpha, True))
+            self.attentions.append(attention_layer(input_dim, hidden_dim, dropout, alpha, True))
 
-        self.output = GraphAttentionLayer(num_heads * hidden_dim, output_dim, dropout, alpha, False)
+        self.output = attention_layer(num_heads * hidden_dim, output_dim, dropout, alpha, False)
 
         return
 
     def forward(self, adjacency, X):
-        """GAT网络 (dense input) 前馈
+        """GAT网络前馈
 
             Inputs:
             -------
