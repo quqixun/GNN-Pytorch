@@ -35,6 +35,7 @@ PrepData = namedtuple(
     field_names=[
         'X',              # 节点特征
         'y',              # 节点类别标签
+        'edges',          # 边列表
         'adjacency',      # 邻接矩阵
         'test_index',     # 测试集样本索引
         'train_index',    # 训练集样本索引

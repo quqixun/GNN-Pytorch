@@ -5,7 +5,8 @@
 import torch
 import torch.nn as nn
 
-from .layers import GraphAttentionLayer, SparseGraphAttentionLayer
+from .layers import GraphAttentionLayer
+from .layers import SparseGraphAttentionLayer
 
 
 class GAT(nn.Module):
@@ -23,21 +24,15 @@ class GAT(nn.Module):
             num_heads: int, 多头注意力个数
             dropout: float, dropout比例
             alpha: float, LeakyReLU负数部分斜率
+            sparse: boolean, 是否使用稀疏数据
 
         """
 
-        print('sparse', sparse)
-
         super(GAT, self).__init__()
 
-        self.dropout1 = nn.Dropout(p=dropout)
-        self.dropout2 = nn.Dropout(p=dropout)
-
-        if sparse:
-            # 使用稀疏数据的attention层
+        if sparse:  # 使用稀疏数据的attention层
             attention_layer = SparseGraphAttentionLayer
-        else:
-            # 使用稠密数据的attention层
+        else:       # 使用稠密数据的attention层
             attention_layer = GraphAttentionLayer
 
         # 多头注意力层
@@ -45,17 +40,19 @@ class GAT(nn.Module):
         for _ in range(num_heads):
             self.attentions.append(attention_layer(input_dim, hidden_dim, dropout, alpha, True))
 
+        self.elu = nn.ELU(inplace=True)
+        self.log_softmax = nn.LogSoftmax(dim=1)
         self.output = attention_layer(num_heads * hidden_dim, output_dim, dropout, alpha, False)
 
         return
 
-    def forward(self, adjacency, X):
+    def forward(self, X, edges):
         """GAT网络前馈
 
             Inputs:
             -------
-            adjacency: tensor, 邻接矩阵
             X: tensor, 节点特征
+            edges: tensor, 边的源节点与目标节点索引
 
             Output:
             -------
@@ -63,10 +60,9 @@ class GAT(nn.Module):
 
         """
 
-        out = self.dropout1(X)
         # 拼接多头注意力层输出
-        out = torch.cat([attention(adjacency, out) for attention in self.attentions], dim=1)
-        out = self.dropout2(out)
-        output = self.output(adjacency, out)
+        out = torch.cat([attention(X, edges) for attention in self.attentions], dim=1)
 
+        # 计算输出
+        output = self.output(self.elu(out), edges)
         return output

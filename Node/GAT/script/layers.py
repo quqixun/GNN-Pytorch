@@ -1,4 +1,4 @@
-"""定义Attention层
+"""定义Graph Attention层
 """
 
 
@@ -7,15 +7,15 @@ import torch.nn as nn
 
 
 # ----------------------------------------------------------------------------
-# Dense Input
+# Dense GAT
 
 
 class GraphAttentionLayer(nn.Module):
-    """Attention层 (dense input)
+    """Graph Attention层 (dense input)
     """
 
-    def __init__(self, input_dim, output_dim, dropout, alpha, activate=True):
-        """Attention层 (dense input)
+    def __init__(self, input_dim, output_dim, dropout, alpha, bias=True):
+        """Graph Attention层 (dense input)
 
             Inputs:
             -------
@@ -23,13 +23,12 @@ class GraphAttentionLayer(nn.Module):
             outut_dim: int, 输出维度
             dropout: float, dropout比例
             alpha: float, LeakyReLU负数部分斜率
-            activate: boolean, 是否激活输出
+            bias: boolean, 是否使用偏置
 
         """
 
         super(GraphAttentionLayer, self).__init__()
 
-        self.activate = activate
         self.output_dim = output_dim
 
         # 节点特征线性变换
@@ -37,11 +36,19 @@ class GraphAttentionLayer(nn.Module):
         # 邻接矩阵线性变换，计算attention
         self.a = nn.Parameter(torch.Tensor(2 * output_dim, 1))
 
-        self.elu = nn.ELU(inplace=True)
+        # 是否使用偏置
+        if bias:
+            self.bias = nn.Parameter(torch.FloatTensor(output_dim))
+        else:
+            self.register_parameter('bias', None)
+
+        # 其他组件
         self.softmax = nn.Softmax(dim=1)
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout_X = nn.Dropout(p=dropout)
+        self.dropout_Att = nn.Dropout(p=dropout)
         self.lrelu = nn.LeakyReLU(negative_slope=alpha)
 
+        # 初始化参数
         self.__init_parameters()
 
         return
@@ -50,18 +57,20 @@ class GraphAttentionLayer(nn.Module):
         """初始化权重
         """
 
-        nn.init.kaiming_normal_(self.W)
-        nn.init.kaiming_normal_(self.a)
+        nn.init.xavier_uniform_(self.W, gain=1.414)
+        nn.init.xavier_uniform_(self.a, gain=1.414)
+        if self.bias is not None:
+            nn.init.zeros_(self.bias)
 
         return
 
-    def forward(self, adjacency, X):
-        """Attention层 (dense input) 前馈
+    def forward(self, X, edges):
+        """Graph Attention层 (dense input) 前馈
 
             Inputs:
             -------
-            adjacency: tensor, 邻接矩阵
             X: tensor, 节点特征
+            edges: tensor, 边的源节点与目标节点索引
 
             Output:
             -------
@@ -70,88 +79,39 @@ class GraphAttentionLayer(nn.Module):
         """
 
         # 节点个数
-        num_nodes = X.size(0)
+        N = X.size(0)
+
+        # 输入数据计算设备
+        device = 'cuda' if X.is_cuda else 'cpu'
 
         # 节点特征线性变换
-        Wh = torch.mm(X, self.W)
+        X = self.dropout_X(X)
+        Wh = torch.matmul(X, self.W)
 
         # 按邻接矩阵顺序, 组合一条边的两个节点特征
-        # Whi: n1, n1, ..., n1, n2, n2, ..., n2, nN, nN, ..., nN
-        #      |<--   N   -->|  |<--   N   -->|  |<--   N   -->|
-        # Whj: n1, n2, ..., nN, n1, n2, ..., nN, ..., n1, n2, ..., nN,
-        #      |<--   N   -->|  |<--   N   -->|       |<--   N   -->|
-        Whi = Wh.repeat_interleave(num_nodes, dim=0)
-        Whj = Wh.repeat(num_nodes, 1)
-        Whij = torch.cat([Whi, Whj], dim=1)
-        Whij = Whij.view(num_nodes, num_nodes, 2 * self.output_dim)
+        Whij = torch.cat([Wh[edges[0]], Wh[edges[1]]], dim=1)
 
         # 计算attention
-        e = self.lrelu(torch.matmul(Whij, self.a).squeeze(2))
-        attention = torch.where(adjacency > 0, e, -9e15 * torch.ones_like(e))
-        attention = self.softmax(attention)
-        attention = self.dropout(attention)
+        e = self.lrelu(torch.matmul(Whij, self.a))
+        attention = -9e15 * torch.ones([N, N], device=device, requires_grad=True)
+        attention[edges[0], edges[1]] = e[:, 0]
+        attention = self.dropout_Att(self.softmax(attention))
 
         # 更新节点特征
         h_prime = torch.matmul(attention, Wh)
-        if self.activate:
-            h_prime = self.elu(h_prime)
-
         return h_prime
 
 
 # ----------------------------------------------------------------------------
-# Sparse Input
-
-
-class SparseMMFunc(torch.autograd.Function):
-
-    @staticmethod
-    def forward(ctx, edges, attentions, N, X):
-        """
-        """
-
-        assert not edges.requires_grad
-
-        ctx.N = N
-        shape = torch.Size([N, N])
-
-        adjacency = torch.sparse_coo_tensor(edges, attentions, shape)
-        ctx.save_for_backward(adjacency, X)
-
-        return torch.matmul(adjacency, X)
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        """
-        """
-
-        adjacency, X = ctx.saved_tensors
-        grad_adj = grad_X = None
-
-        if ctx.needs_input_grad[1]:
-            grad_adj = grad_output.matmul(X.t())
-            indices = adjacency._indices()
-            edges = indices[0, :] * ctx.N + indices[1, :]
-            grad_adj = grad_adj.view(-1)[edges]
-
-        if ctx.needs_input_grad[3]:
-            grad_X = adjacency.t().matmul(grad_output)
-
-        return None, grad_adj, None, grad_X
-
-
-class SparseMM(nn.Module):
-
-    def forward(self, edges, attentions, N, X):
-        return SparseMMFunc(edges, attentions, N, X)
+# Sparse GAT
 
 
 class SparseGraphAttentionLayer(nn.Module):
-    """Attention层 (sparse input)
+    """Graph Attention层 (sparse input)
     """
 
-    def __init__(self, input_dim, output_dim, dropout, alpha, activate=True):
-        """Attention层 (sparse input)
+    def __init__(self, input_dim, output_dim, dropout, alpha, bias=True):
+        """Graph Attention层 (sparse input)
 
             Inputs:
             -------
@@ -159,25 +119,32 @@ class SparseGraphAttentionLayer(nn.Module):
             outut_dim: int, 输出维度
             dropout: float, dropout比例
             alpha: float, LeakyReLU负数部分斜率
-            activate: boolean, 是否激活输出
+            bias: boolean, 是否使用偏置
 
         """
 
         super(SparseGraphAttentionLayer, self).__init__()
 
-        self.activate = activate
         self.output_dim = output_dim
 
         # 节点特征线性变换
         self.W = nn.Parameter(torch.Tensor(input_dim, output_dim))
         # 邻接矩阵线性变换，计算attention
-        self.a = nn.Parameter(torch.Tensor(1, 2 * output_dim))
+        self.a = nn.Parameter(torch.Tensor(2 * output_dim, 1))
 
-        self.spmm = SparseMM()
-        self.elu = nn.ELU(inplace=True)
-        self.dropout = nn.Dropout(p=dropout)
+        # 是否使用偏置
+        if bias:
+            self.bias = nn.Parameter(torch.FloatTensor(output_dim))
+        else:
+            self.register_parameter('bias', None)
+
+        # 其他组件
+        self.softmax = nn.Softmax(dim=1)
+        self.dropout_X = nn.Dropout(p=dropout)
+        self.dropout_Att = nn.Dropout(p=dropout)
         self.lrelu = nn.LeakyReLU(negative_slope=alpha)
 
+        # 初始化参数
         self.__init_parameters()
 
         return
@@ -186,18 +153,20 @@ class SparseGraphAttentionLayer(nn.Module):
         """初始化权重
         """
 
-        nn.init.kaiming_normal_(self.W)
-        nn.init.kaiming_normal_(self.a)
+        nn.init.xavier_uniform_(self.W, gain=1.414)
+        nn.init.xavier_uniform_(self.a, gain=1.414)
+        if self.bias is not None:
+            nn.init.zeros_(self.bias)
 
         return
 
-    def forward(self, adjacency, X):
-        """Attention层 (sparse input) 前馈
+    def forward(self, X, edges):
+        """Graph Attention层 (sparse input) 前馈
 
             Inputs:
             -------
-            adjacency: tensor, 邻接矩阵
             X: tensor, 节点特征
+            edges: tensor, 边的源节点与目标节点索引
 
             Output:
             -------
@@ -205,28 +174,58 @@ class SparseGraphAttentionLayer(nn.Module):
 
         """
 
+        # 节点个数
         N = X.size(0)
-        edges = torch.nonzero(adjacency, as_tuple=False).t()
+
+        # 输入数据计算设备
         device = 'cuda' if X.is_cuda else 'cpu'
-        row = torch.ones(size=(N, 1), device=device)
 
         # 节点特征线性变换
-        Wh = torch.mm(X, self.W)
+        X = self.dropout_X(X)
+        Wh = torch.matmul(X, self.W)
 
         # 按邻接矩阵顺序, 组合一条边的两个节点特征
-        Whij = torch.cat([Wh[edges[0, :]], Wh[edges[1, :]]], dim=1).t()
-
-        print(self.a.size(), Whij.size())
+        Whij = torch.cat([Wh[edges[0]], Wh[edges[1]]], dim=1)
 
         # 计算attention
-        e = torch.exp(-self.lrelu(self.a.mm(Whij)).squeeze())
-        e_rowsum = self.spmm(edges, e, N, row)
-        e = self.dropout(e)
+        e = self.lrelu(torch.matmul(Whij, self.a))
+        attention = self.__sparse_softmax(edges, e, N, device)
+        attention = self.dropout_Att(self.softmax(attention))
 
         # 更新节点特征
-        h_prime = self.spmm(edges, e, N, Wh)
-        h_prime = h_prime.div(e_rowsum)
-        if self.activate:
-            h_prime = self.elu(h_prime)
+        h_prime = self.__sparse_matmul(edges, attention, Wh)
+        return h_prime
+
+    @staticmethod
+    def __sparse_softmax(edges, e, N, device):
+        """稀疏数据的Softmax
+        """
+
+        source = edges[0]
+        e_max = e.max()
+        e_exp = torch.exp(e - e_max)
+        e_exp_sum = torch.zeros(N, 1, device=device)
+        e_exp_sum.scatter_add_(
+            dim=0,
+            index=source.unsqueeze(1),
+            src=e_exp
+        )
+        e_exp_sum += 1e-10
+        e_softmax = e_exp / e_exp_sum[source]
+
+        return e_softmax
+
+    @staticmethod
+    def __sparse_matmul(edges, attention, Wh):
+        """稀疏数据Matmul
+        """
+
+        source, target = edges
+        h_prime = torch.zeros_like(Wh)
+        h_prime.scatter_add_(
+            dim=0,
+            index=source.expand(Wh.size(1), -1).t(),
+            src=attention * Wh[target]
+        )
 
         return h_prime

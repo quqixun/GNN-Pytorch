@@ -72,7 +72,9 @@ def prepare(dataset):
     """
 
     # 节点特征归一化
-    X = dataset.data.X / dataset.data.X.sum(1, keepdims=True)
+    X_rowsum = dataset.data.X.sum(1, keepdims=True)
+    X_rowsum[X_rowsum == 0] = 1
+    X = dataset.data.X / X_rowsum
     X = torch.FloatTensor(X)
 
     # 节点标签
@@ -85,11 +87,10 @@ def prepare(dataset):
 
     # 邻接矩阵正则化
     norm_adjacency = normalize_adjacency(dataset.data.adjacency)
-    indices = np.asarray([norm_adjacency.row, norm_adjacency.col])
-    indices = torch.from_numpy(indices.astype(int)).long()
+    edges = np.asarray([norm_adjacency.row, norm_adjacency.col])
+    edges = torch.from_numpy(edges.astype(int)).long()
     values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
-    adjacency = torch.sparse.FloatTensor(indices, values, (len(X), len(X)))
-    adjacency = adjacency.to_dense()
+    adjacency = torch.sparse.FloatTensor(edges, values, (len(X), len(X)))
 
     # 数据加载至的设备
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -98,6 +99,7 @@ def prepare(dataset):
     dataset = PrepData(
         X=X.to(device),
         y=y.to(device),
+        edges=edges.to(device),
         adjacency=adjacency.to(device),
         test_index=test_index.to(device),
         train_index=train_index.to(device),

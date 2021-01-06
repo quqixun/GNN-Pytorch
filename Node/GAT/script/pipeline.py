@@ -25,6 +25,8 @@ class Pipeline(object):
             ------
             params: dict, 模型参数和超参数, 格式为:
                     params = {
+                        'sparse': False,
+                        'random_state' 42,
                         'model': {
                             'input_dim': 1433,
                             'hidden_dim': 8,
@@ -96,6 +98,7 @@ class Pipeline(object):
 
         # 定义损失函数
         self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.NLLLoss()
 
         # 定义优化器
         self.optimizer = optim.Adam(
@@ -132,7 +135,7 @@ class Pipeline(object):
             self.model.train()
 
             # 模型输出
-            logits = self.model(dataset.adjacency, dataset.X)
+            logits = self.model(dataset.X, dataset.edges)
             train_logits = logits[dataset.train_index]
 
             # 计算损失函数
@@ -196,7 +199,7 @@ class Pipeline(object):
             index = dataset.test_index
 
         # 获得待预测节点的输出
-        logits = self.model(dataset.adjacency, dataset.X)
+        logits = self.model(dataset.X, dataset.edges)
         predict_y = logits[index].max(1)[1]
 
         # 计算预测准确率
