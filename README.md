@@ -10,6 +10,7 @@ GNN方法和模型的Pytorch实现。
 | :heavy_check_mark: |       [GCN](./Node/GCN)       | [Kipf and Welling, 2017](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 | 0.790  |  0.702   |
 | :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Hamilton et al., 2017](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 | 0.778  |  0.701   |
 | :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.823 |  0.777   |  0.715   |
+|  | [FastGCN](./Node/FastGCN)<sup>*****</sup> | [Chen et al., 2018](https://arxiv.org/pdf/1801.10247.pdf) |  |  |  |
 
 <br/>
 
