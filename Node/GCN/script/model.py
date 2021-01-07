@@ -70,14 +70,14 @@ class GraphConvolution(nn.Module):
         return output
 
 
-class GCNet(nn.Module):
+class GCN(nn.Module):
     """简单图卷积网络
 
         定义包含两层图卷积的简单网络。
 
     """
 
-    def __init__(self, input_dim, output_dim, hidden_dim, use_bias=True):
+    def __init__(self, input_dim, output_dim, hidden_dim, dropout, use_bias=True):
         """简单图卷积网络
 
             Inputs:
@@ -85,15 +85,18 @@ class GCNet(nn.Module):
             input_dim: int, 节点特征维度
             output_dim: int, 节点类别数
             hidden_dim: int, 第一层图卷积输出维度
+            dropout: float, dropout比例
             use_bias: boolean, 是否使用偏置
 
         """
 
-        super(GCNet, self).__init__()
+        super(GCN, self).__init__()
 
         self.gcn1 = GraphConvolution(input_dim, hidden_dim, use_bias)
-        self.act1 = nn.ReLU(inplace=True)
         self.gcn2 = GraphConvolution(hidden_dim, output_dim, use_bias)
+
+        self.act = nn.ReLU(inplace=True)
+        self.dropout = nn.Dropout(p=dropout)
 
         return
 
@@ -111,6 +114,7 @@ class GCNet(nn.Module):
 
         """
 
-        out = self.act1(self.gcn1(adjacency, X))
+        out = self.gcn1(adjacency, X)
+        out = self.dropout(self.act(out))
         logits = self.gcn2(adjacency, out)
         return logits

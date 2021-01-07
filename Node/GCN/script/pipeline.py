@@ -9,7 +9,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 
-from .model import GCNet
+from .model import GCN
 
 
 class Pipeline(object):
@@ -29,7 +29,8 @@ class Pipeline(object):
                             'input_dim': 1433,
                             'output_dim': 7,
                             'hidden_dim': 16,
-                            'use_bias': True
+                            'use_bias': True,
+                            'dropout': 0.5
                         },
                         'hyper': {
                             'lr': 1e-2,
@@ -72,7 +73,7 @@ class Pipeline(object):
 
         """
 
-        self.model = GCNet(**model_params)
+        self.model = GCN(**model_params)
         if torch.cuda.is_available():
             self.model.cuda()
 
