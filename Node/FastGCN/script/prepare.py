@@ -12,7 +12,7 @@ import torch
 import scipy
 import numpy as np
 
-from .utils import Data
+from .utils import PrepData, sparse_matrix_to_tensor
 
 
 def normalize_adjacency(adjacency):
@@ -59,13 +59,16 @@ def prepare(dataset):
 
         Output:
         -------
-        dataset: Data, 包含的元素为:
+        dataset: PrepData, 包含的元素为:
                  X: tensor, 归一化后的节点特征
                  y: tensor, 节点类别标签
-                 adjacency: sparse tensor, 正则化后的邻接矩阵
-                 test_mask: tensor, 测试集样本mask
-                 train_mask: tensor, 训练集样本mask
-                 valid_mask: tensor, 验证集样本mask
+                 adjacency: sparse array, 正则化后的邻接矩阵
+                 test_index: numpy array, 测试集样本索引
+                 train_index: numpy array, 训练集样本索引
+                 valid_index: numpy array, 验证集样本索引
+                 adjacency_test: sparse array, 测试集节点邻接矩阵
+                 adjacency_valid: sparse array, 验证集节点邻接矩阵
+                 adjacency_train: sparse array, 训练集节点邻接矩阵
 
     """
 
@@ -81,34 +84,29 @@ def prepare(dataset):
     train_index = np.where(dataset.data.train_mask)[0]
     valid_index = np.where(dataset.data.valid_mask)[0]
 
+    # 正则化所有节点的邻接矩阵
     adjacency = dataset.data.adjacency.tocsr()
-    adjacenty_train = adjacency[train_index, :][:, train_index]
-
     adjacency = normalize_adjacency(adjacency)
-    adjacenty_test = adjacency[test_index, :]
-    adjacenty_valid = adjacency[valid_index, :]
-    adjacenty_train = normalize_adjacency(adjacenty_train)
 
-    # # 邻接矩阵正则化
-    # norm_adjacency = normalize_adjacency(dataset.data.adjacency)
-    # indices = np.asarray([norm_adjacency.row, norm_adjacency.col])
-    # indices = torch.from_numpy(indices.astype(int)).long()
-    # values = torch.from_numpy(norm_adjacency.data.astype(np.float32))
-    # adjacency = torch.sparse.FloatTensor(indices, values, (len(X), len(X)))
+    # 正则化训练集节点的邻接矩阵
+    adjacency_train = adjacency[train_index, :][:, train_index]
+    adjacency_train = normalize_adjacency(adjacency_train)
 
-    # # 数据加载至的设备
-    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # 获取验证集和测试集节点的邻接矩阵
+    adjacency_test = adjacency[test_index, :]
+    adjacency_valid = adjacency[valid_index, :]
 
-    # # 合并数据
-    # dataset = Data(
-    #     X=X.to(device),
-    #     y=y.to(device),
-    #     adjacency=adjacency.to(device),
-    #     test_index=test_index.to(device),
-    #     train_index=train_index.to(device),
-    #     valid_index=valid_index.to(device)
-    # )
+    # 合并数据
+    dataset = PrepData(
+        X=X,
+        y=y,
+        adjacency=adjacency,
+        test_index=test_index,
+        train_index=train_index,
+        valid_index=valid_index,
+        adjacency_test=adjacency_test,
+        adjacency_valid=adjacency_valid,
+        adjacency_train=adjacency_train
+    )
 
-    # return dataset
-
-    return None
+    return dataset
