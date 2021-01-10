@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.optim as optim
 
 from .model import GCN
+from .sampling import Sampler
+from .utils import sparse_matrix_to_tensor
 
 
 class Pipeline(object):
@@ -41,9 +43,11 @@ class Pipeline(object):
 
         """
 
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
+        self.__build_sampler(**params)
 
         return
 
@@ -74,8 +78,7 @@ class Pipeline(object):
         """
 
         self.model = GCN(**model_params)
-        if torch.cuda.is_available():
-            self.model.cuda()
+        self.model.to(self.device)
 
         return
 
@@ -89,6 +92,7 @@ class Pipeline(object):
         """
 
         self.epochs = hyper_params['epochs']
+        self.batch_size = hyper_params['batch_size']
 
         # 定义损失函数
         self.criterion = nn.CrossEntropyLoss()
@@ -102,18 +106,52 @@ class Pipeline(object):
 
         return
 
+    def __build_sampler(self, **params):
+        """
+        """
+
+        self.sampler = Sampler(
+            input_dim=params['model']['input_dim'],
+            sampler_dims=params['hyper']['sampler_dims'],
+            device=self.device
+        )
+
+        return
+
+    def __batch_generator(self, nodes, y, shuffle=True):
+        """
+        """
+
+        if shuffle:
+            np.random.shuffle(nodes)
+
+        start = 0
+        while True:
+            end = start + self.batch_size
+            if end > len(nodes):
+                break
+
+            batch_nodes = nodes[start:end]
+            batch_y = y[batch_nodes]
+            yield batch_nodes, batch_y
+            start += self.batch_size
+
+        return
+
     def train(self, dataset):
         """训练模型
 
             Input:
             ------
-            dataset: Data, 包含X, y, adjacency, test_mask,
-                     train_mask和valid_mask
+            dataset: Data, 包含X, y, adjacency, test_index,
+                     train_index和valid_index
 
         """
 
         # 训练集标签
-        train_y = dataset.y[dataset.train_mask]
+        train_nodes = dataset.train_index
+        train_X = dataset.X[train_nodes]
+        train_y = dataset.y[train_nodes]
 
         # 记录验证集效果最佳模型
         best_model = None
@@ -125,17 +163,30 @@ class Pipeline(object):
             # 模型训练模式
             self.model.train()
 
-            # 模型输出
-            logits = self.model(dataset.adjacency, dataset.X)
-            train_logits = logits[dataset.train_mask]
+            # 用于记录每个epoch中所有batch的loss
+            epoch_losses = []
 
-            # 计算损失函数
-            loss = self.criterion(train_logits, train_y)
+            for batch_nodes, batch_y in self.__batch_generator(dataset.train_index, train_y):
+                sampled_X, sampled_adjacency = self.sampler.sampling(
+                    X=train_X,
+                    adjacency=dataset.adjacency_train,
+                    batch_nodes=batch_nodes
+                )
 
-            # 反向传播
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+                # 模型输出
+                logits = self.model(sampled_adjacency, sampled_X)
+
+                # 计算损失函数
+                loss = self.criterion(logits, batch_y)
+                epoch_losses.append(loss.item())
+
+                # 反向传播
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+            # 计算epoch中所有batch的loss的均值
+            epoch_loss = np.mean(epoch_losses)
 
             # 计算训练集准确率
             train_acc = self.predict(dataset, 'train')
@@ -143,7 +194,7 @@ class Pipeline(object):
             valid_acc = self.predict(dataset, 'valid')
 
             print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
-                epoch, loss, train_acc, valid_acc))
+                epoch, epoch_loss, train_acc, valid_acc))
 
             if valid_acc >= best_valid_acc:
                 # 获得最佳验证集准确率
@@ -160,8 +211,8 @@ class Pipeline(object):
 
             Inputs:
             -------
-            dataset: Data, Data, 包含X, y, adjacency, test_mask,
-                     train_mask和valid_mask
+            dataset: Data, 包含X, y, adjacency, test_index,
+                     train_index和valid_index
             split: string, 待预测的节点
 
             Output:
@@ -175,18 +226,22 @@ class Pipeline(object):
 
         # 节点mask
         if split == 'train':
-            mask = dataset.train_mask
+            index = dataset.train_index
         elif split == 'valid':
-            mask = dataset.valid_mask
+            index = dataset.valid_index
         else:  # split == 'test'
-            mask = dataset.test_mask
+            index = dataset.test_index
+
+        split_adjacency = dataset.adjacency[index, :]
+        adjacency = sparse_matrix_to_tensor(dataset.adjacency, self.device)
+        split_adjacency = sparse_matrix_to_tensor(split_adjacency, self.device)
 
         # 获得待预测节点的输出
-        logits = self.model(dataset.adjacency, dataset.X)
-        predict_y = logits[mask].max(1)[1]
+        logits = self.model([adjacency, split_adjacency], dataset.X)
+        predict_y = logits.max(1)[1]
 
         # 计算预测准确率
-        y = dataset.y[mask]
+        y = dataset.y[index]
         accuracy = torch.eq(predict_y, y).float().mean()
 
         return accuracy

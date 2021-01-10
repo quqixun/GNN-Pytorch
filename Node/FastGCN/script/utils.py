@@ -43,8 +43,6 @@ PrepData = namedtuple(
         'test_index',       # 测试集样本索引
         'train_index',      # 训练集样本索引
         'valid_index',      # 验证集样本索引
-        'adjacency_test',   # 测试集节点邻接矩阵
-        'adjacency_valid',  # 验证集节点邻接矩阵
         'adjacency_train'   # 训练集节点邻接矩阵
     ]
 )
@@ -65,7 +63,7 @@ def load_config(config_file):
     return config
 
 
-def sparse_matrix_to_tensor(sparse_matrix):
+def sparse_matrix_to_tensor(sparse_matrix, device):
     """稀疏矩阵转换至tensor
 
         Input:
@@ -89,4 +87,5 @@ def sparse_matrix_to_tensor(sparse_matrix):
     values = torch.from_numpy(sparse_matrix.data.astype(np.float32))
     sparse_tensor = torch.sparse.FloatTensor(indices, values, sparse_matrix.shape)
 
+    sparse_tensor = sparse_tensor.to(device)
     return sparse_tensor

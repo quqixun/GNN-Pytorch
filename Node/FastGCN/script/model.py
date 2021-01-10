@@ -114,7 +114,7 @@ class GCN(nn.Module):
 
         """
 
-        out = self.gcn1(adjacency, X)
+        out = self.gcn1(adjacency[0], X)
         out = self.dropout(self.act(out))
-        logits = self.gcn2(adjacency, out)
+        logits = self.gcn2(adjacency[1], out)
         return logits
