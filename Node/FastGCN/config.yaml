@@ -15,9 +15,9 @@ cora:      # 使用Cora数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       100           # 训练轮次
-        batch_size:   64            # 
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
-        sampler_dims: [128, 128]    #
+        sampler_dims: [128, 128]    # 每层网络采样节点个数
 
 
 
@@ -34,9 +34,9 @@ pubmed:    # 使用Pubmed数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       100           # 训练轮次
-        batch_size:   64            # 
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
-        sampler_dims: [128, 128]    #
+        sampler_dims: [128, 128]    # 每层网络采样节点个数
 
 
 
@@ -53,9 +53,9 @@ citeseer:  # 使用Citeseer数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       200           # 训练轮次
-        batch_size:   64            # 
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
-        sampler_dims: [128, 128]    #
+        sampler_dims: [128, 128]    # 每层网络采样节点个数
 
 
 

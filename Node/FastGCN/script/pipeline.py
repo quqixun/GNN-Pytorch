@@ -1,4 +1,4 @@
-"""GCN模型训练与预测
+"""FastGCN训练与预测
 """
 
 
@@ -15,11 +15,11 @@ from .utils import sparse_matrix_to_tensor
 
 
 class Pipeline(object):
-    """GCN模型训练与预测
+    """FastGCN训练与预测
     """
 
     def __init__(self, **params):
-        """GCN模型训练与预测
+        """FastGCN训练与预测
 
             加载GCN模型, 生成训练必要组件实例
 
@@ -37,7 +37,9 @@ class Pipeline(object):
                         'hyper': {
                             'lr': 1e-2,
                             'epochs': 100,
-                            'weight_decay': 5e-4
+                            'batch_size': 64,
+                            'weight_decay': 5e-4,
+                            'sampler_dims': [128, 128]
                         }
                     }
 
@@ -107,7 +109,14 @@ class Pipeline(object):
         return
 
     def __build_sampler(self, **params):
-        """
+        """加载节点采样器
+
+            Input:
+            ------
+            params: dict, 模型参数和超参数, 提供的参数包括:
+                    input_dim: 节点特征维度
+                    sampler_dims: 每层网络采样节点数
+
         """
 
         self.sampler = Sampler(
@@ -119,21 +128,39 @@ class Pipeline(object):
         return
 
     def __batch_generator(self, nodes, y, shuffle=True):
-        """
+        """批数据生成器
+
+            Inputs:
+            -------
+            nodes: numpy array, 用于生成批数据的节点索引列表
+            y: tensor, 节点标签
+            shuffle: boolean, 是否打乱数据再生成批数据
+
+            Output:
+            -------
+            batch_nodes: numpy array, 批数据节点索引列表
+            batch_y: tensor, 批数据标签
+
         """
 
         if shuffle:
+            # 打乱输入的节点索引列表
             np.random.shuffle(nodes)
 
         start = 0
         while True:
+            # 获得当前批数据终点索引
             end = start + self.batch_size
             if end > len(nodes):
                 break
 
+            # 获得批数据节点索引列表
             batch_nodes = nodes[start:end]
+            # 获得批数据标签
             batch_y = y[batch_nodes]
             yield batch_nodes, batch_y
+
+            # 计算下一批数据的起点索引
             start += self.batch_size
 
         return
@@ -167,6 +194,8 @@ class Pipeline(object):
             epoch_losses = []
 
             for batch_nodes, batch_y in self.__batch_generator(dataset.train_index, train_y):
+
+                # 获得采样节点特征及采样的邻接矩阵
                 sampled_X, sampled_adjacency = self.sampler.sampling(
                     X=train_X,
                     adjacency=dataset.adjacency_train,
@@ -232,9 +261,12 @@ class Pipeline(object):
         else:  # split == 'test'
             index = dataset.test_index
 
+        # 数据集对应的邻接矩阵
         split_adjacency = dataset.adjacency[index, :]
-        adjacency = sparse_matrix_to_tensor(dataset.adjacency, self.device)
         split_adjacency = sparse_matrix_to_tensor(split_adjacency, self.device)
+
+        # 完整邻接矩阵
+        adjacency = sparse_matrix_to_tensor(dataset.adjacency, self.device)
 
         # 获得待预测节点的输出
         logits = self.model([adjacency, split_adjacency], dataset.X)
@@ -243,5 +275,4 @@ class Pipeline(object):
         # 计算预测准确率
         y = dataset.y[index]
         accuracy = torch.eq(predict_y, y).float().mean()
-
         return accuracy

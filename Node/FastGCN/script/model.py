@@ -105,7 +105,7 @@ class GCN(nn.Module):
 
             Inputs:
             -------
-            adjacency: tensor in shape [num_nodes, num_nodes], 邻接矩阵
+            adjacency: list of tensor in shape [num_nodes, num_nodes], 每层邻接矩阵
             X: tensor in shape [num_nodes, input_dim], 节点特征
 
             Output:

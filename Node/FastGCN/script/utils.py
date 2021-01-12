@@ -69,6 +69,7 @@ def sparse_matrix_to_tensor(sparse_matrix, device):
         Input:
         ------
         sparse_matrix: csr_matrix or coo_matrix, 输入稀疏矩阵
+        device: string, 使用的计算设备
 
         Output:
         -------
@@ -87,5 +88,6 @@ def sparse_matrix_to_tensor(sparse_matrix, device):
     values = torch.from_numpy(sparse_matrix.data.astype(np.float32))
     sparse_tensor = torch.sparse.FloatTensor(indices, values, sparse_matrix.shape)
 
+    # 使用相应的计算设备
     sparse_tensor = sparse_tensor.to(device)
     return sparse_tensor

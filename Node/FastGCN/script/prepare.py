@@ -92,7 +92,7 @@ def prepare(dataset):
     adjacency = normalize_adjacency(adjacency)
     adjacency_train = normalize_adjacency(adjacency_train)
 
-    #
+    # 可用的计算设备
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # 合并数据
