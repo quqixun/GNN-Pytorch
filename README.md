@@ -24,7 +24,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Hamilton et al., 2017](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 |  0.701   | 0.778 |
 | :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.823 |  0.715   | 0.777 |
 | :heavy_check_mark: | [FastGCN](./Node/FastGCN)<sup>**\***</sup> | [Chen et al., 2018](https://arxiv.org/pdf/1801.10247.pdf) | 0.854 | 0.779 | 0.858 |
-|  | GRAND | [Feng and Zhang et al., 2020](https://arxiv.org/pdf/2005.11079.pdf) |  |  |  |
+|  | GRAND | [Feng et al., 2020](https://arxiv.org/pdf/2005.11079.pdf) |  |  |  |
 
 **\*** 使用Cora-Full，Pubmed-Full和Citeseer-Full数据集训练并评价。
 
@@ -42,7 +42,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 |        | SAGPool<sub>g</sub> |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   |
 |        | SAGPool<sub>h</sub> |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   |
 |        |    Graph U-Nets     |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |
-|        |     MinCutPool      | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |
+|        |     MinCutPool      | [Bianchi et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |
 
 <br/>
 
