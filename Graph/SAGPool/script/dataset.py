@@ -2,93 +2,63 @@
 """
 
 
-import torch
+import random
 
-from torch_geometric.utils import degree
 from torch_geometric.datasets import TUDataset
-
-
-class Indegree(object):
-    """
-    """
-
-    def __init__(self, norm=True, max_value=None, cat=True):
-        self.norm = norm
-        self.max = max_value
-        self.cat = cat
-
-    def __call__(self, data):
-        col, x = data.edge_index[1], data.x
-        deg = degree(col, data.num_nodes)
-
-        if self.norm:
-            deg = deg / (deg.max() if self.max is None else self.max)
-
-        deg = deg.view(-1, 1)
-
-        if x is not None and self.cat:
-            x = x.view(-1, 1) if x.dim() == 1 else x
-            data.x = torch.cat([x, deg.to(x.dtype)], dim=-1)
-        else:
-            data.x = deg
-
-        return data
 
 
 class Dataset(object):
     """
     """
 
-    def __init__(self, data, dataset_root):
+    def __init__(self, data, dataset_root, **params):
         """
         """
 
         assert data in ['DD', 'NCI1', 'PROTEINS'], 'uknown dataset'
 
-        print('Downloading and Preprocessing [{}] Dataset ...'.format(data))
-
-        dataset = TUDataset(
-            root=dataset_root, name=data,
-            pre_transform=Indegree(), use_node_attr=True
-        )
-
-        self.data = dataset.data
-        self.slices = dataset.slices
+        print('Downloading and Preprocessing [{}] Dataset ...'.format(data.upper()))
+        self.__load_data(data, dataset_root)
+        self.__split_data(**params)
 
         return
 
+    def __load_data(self, data, dataset_root):
+        """
+        """
 
-if __name__ == '__main__':
+        self.dataset = TUDataset(
+            root=dataset_root, name=data, use_node_attr=True
+        )
 
-    # data = 'DD'
-    # # data = 'NCI1'
-    # # data = 'PROTEINS'
+        # print(len(self.dataset))
+        # print(self.dataset.data.x.size())
+        # print(self.dataset.data.y.size())
+        # print(self.dataset.data.edge_index.size())
+        # print(self.dataset.slices['x'].size())
+        # print(self.dataset.slices['y'].size())
+        # print(self.dataset.slices['edge_index'].size())
 
-    # dataset_root = '../../../Dataset'
+        return
 
-    # dataset_name = data.upper()
-    # dataset_dir = os.path.join(dataset_root, data)
-    # print(dataset_dir)
+    def __split_data(self, **params):
+        """
+        """
 
-    # dataset = TUDataset(
-    #     root=dataset_root, name=data,
-    #     pre_transform=Indegree(), use_node_attr=True
-    # )
+        num_graphs = len(self.dataset)
+        num_test = int(num_graphs * params['split']['test_prop'])
+        num_valid = int(num_graphs * params['split']['valid_prop'])
 
-    # print(dataset.data.x.size())
-    # print(dataset.data.y.size())
-    # print(dataset.data.edge_index.size())
-    # print(dataset.slices['x'].size())
-    # print(dataset.slices['y'].size())
-    # print(dataset.slices['edge_index'].size())
+        indices = list(range(num_graphs))
+        random.seed(params['random_state'])
+        random.shuffle(indices)
 
-    # dataset = Dataset(data='DD', dataset_root='../../../Dataset')
-    # dataset = Dataset(data='NCI1', dataset_root='../../../Dataset')
-    dataset = Dataset(data='PROTEINS', dataset_root='../../../Dataset')
+        test_indices = indices[:num_test]
+        valid_indices = indices[num_test:num_test + num_valid]
+        train_indices = indices[num_test + num_valid:]
 
-    print(dataset.data.x.size())
-    print(dataset.data.y.size())
-    print(dataset.data.edge_index.size())
-    print(dataset.slices['x'].size())
-    print(dataset.slices['y'].size())
-    print(dataset.slices['edge_index'].size())
+        self.test = self.dataset[test_indices]
+        self.valid = self.dataset[valid_indices]
+        self.train = self.dataset[train_indices]
+
+        return
