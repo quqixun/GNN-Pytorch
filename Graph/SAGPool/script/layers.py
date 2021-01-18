@@ -5,6 +5,7 @@
 import torch
 import torch.nn as nn
 
+from .utils import topk, filter_adjacency
 from torch_scatter import scatter_max, scatter_mean
 
 
@@ -101,4 +102,30 @@ def global_avg_pool(X, graph_indicator):
 # 自注意力机制池化层
 
 
+class SelfAttentionPooling(nn.Module):
 
+    def __init__(self, input_dim, keep_ratio):
+        """
+        """
+
+        super(SelfAttentionPooling, self).__init__()
+
+        self.keep_ratio = keep_ratio
+        self.act = nn.Tanh()
+        self.gcn = GraphConvolution(input, 1)
+
+        return
+
+    def forward(self, X, adjacency, graph_batch):
+        """
+        """
+
+        node_score = self.gcn(adjacency, X)
+        node_score = self.act(node_score)
+
+        mask = topk(node_score, graph_batch, self.keep_ratio)
+        mask_X = X[mask] * node_score.view(-1, 1)
+        mask_graph_batch = graph_batch[mask]
+        mask_adjacency = filter_adjacency(adjacency, mask)
+
+        return mask_X, mask_adjacency, mask_graph_batch

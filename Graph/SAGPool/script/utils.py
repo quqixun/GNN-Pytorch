@@ -58,7 +58,7 @@ def generate_adjacency(X, graph):
     return adjacency
 
 
-def normalize_adjacency(adjacency, device):
+def normalize_adjacency(adjacency):
     """邻接矩阵正则化
 
         L = D^-0.5 * (A + I) * D^-0.5
@@ -78,8 +78,7 @@ def normalize_adjacency(adjacency, device):
     adjacency += scipy.sparse.eye(adjacency.shape[0])
     degree = np.array(adjacency.sum(1))
     d_hat = scipy.sparse.diags(np.power(degree, -0.5).flatten())
-    adjacency = d_hat.dot(adjacency).dot(d_hat)
-    adjacency = adjacency.tocoo()
+    adjacency = d_hat.dot(adjacency).dot(d_hat).tocoo()
 
     # 转换成稀疏tensor
     indices = np.asarray([adjacency.row, adjacency.col])
@@ -88,5 +87,53 @@ def normalize_adjacency(adjacency, device):
     adjacency_tensor = torch.sparse.FloatTensor(indices, values, adjacency.shape)
 
     # 使用相应的计算设备
-    adjacency_tensor = adjacency_tensor.to(device)
     return adjacency_tensor
+
+
+def topk(node_score, graph_batch, keep_ratio):
+    """
+    """
+
+    graph_ids = list(set(graph_batch.cpu().numpy()))
+    mask = node_score.new_empty((0,), dtype=bool)
+
+    for grid_id in graph_ids:
+        graph_node_score = node_score[graph_batch == grid_id]
+        _, sorted_index = graph_node_score.sort(descending=True)
+
+        num_graph_node = len(graph_node_score)
+        graph_mask = node_score.new_zeros((num_graph_node,), dtype=bool)
+
+        num_keep_node = int(keep_ratio * num_graph_node)
+        graph_mask[sorted_index[:num_keep_node]] = True
+        mask = torch.cat([mask, graph_mask])
+
+    return mask
+
+
+def filter_adjacency(adjacency, mask):
+    """
+    """
+
+    device = adjacency.device
+    num_nodes = adjacency.size(0)
+
+    indices = adjacency.coalesce().indices().cpu().numpy()
+    row, col = indices
+
+    non_self_loop = row != col
+    row = row[non_self_loop]
+    col = col[non_self_loop]
+
+    sparse_adjacency = scipy.sparse.csr_matrix(
+        (np.ones(len(row))), (row, col),
+        shape=(num_nodes, num_nodes),
+        dtype=np.float32
+    )
+
+    mask = mask.cpu().numpy()
+    filtered_adjacency = sparse_adjacency[mask, :][:, mask]
+    filtered_adjacency = normalize_adjacency(filtered_adjacency)
+    filtered_adjacency = filtered_adjacency.to(device)
+
+    return filtered_adjacency
