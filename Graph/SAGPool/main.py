@@ -1,7 +1,7 @@
 from script.dataset import Dataset
 # from script.prepare import prepare
 from script.utils import load_config
-# from script.pipeline import Pipeline
+from script.pipeline import Pipeline
 
 
 def train_and_test(data, dataset_root, config):
@@ -22,8 +22,8 @@ def train_and_test(data, dataset_root, config):
     dataset = Dataset(data, dataset_root, **config[data])
 
     # 训练模型
-    # pipeline = Pipeline(**config[data])
-    # pipeline.train(prep_dataset)
+    pipeline = Pipeline(**config[data])
+    pipeline.train(dataset)
 
     # # 测试集准确率
     # test_acc = pipeline.predict(prep_dataset, 'test')
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     # Cora Test F1 Score:
 
     # 使用NCI1数据集训练和测试模型
-    # train_and_test('NCI1', dataset_root, config)
+    train_and_test('NCI1', dataset_root, config)
     # Citeseer Test F1 Score:
 
     # 使用PROTEINS数据集训练和测试模型
-    train_and_test('PROTEINS', dataset_root, config)
+    # train_and_test('PROTEINS', dataset_root, config)
     # Pubmed Test F1 Score:

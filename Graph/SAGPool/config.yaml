@@ -17,7 +17,7 @@ DD:      # 使用Cora数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       100           # 训练轮次
-        batch_size:   32            # 批数据数量
+        batch_size:   8            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 
@@ -37,7 +37,7 @@ NCI1:      # 使用Cora数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       100           # 训练轮次
-        batch_size:   32            # 批数据数量
+        batch_size:   8            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 
@@ -57,7 +57,7 @@ PROTEINS:      # 使用Cora数据集训练模型
     hyper:                        # 训练超参数
         lr:           0.01          # 优化器初始学习率
         epochs:       100           # 训练轮次
-        batch_size:   32            # 批数据数量
+        batch_size:   8            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 
