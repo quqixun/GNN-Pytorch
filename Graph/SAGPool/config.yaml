@@ -10,14 +10,17 @@ DD:      # 使用Cora数据集训练模型
         test_prop:    0.2           # 测试集数据比例
         valid_prop:   0.1           # 验证集数据比例
     model:                        # 模型参数
-        dropout:      0.0           # dropout比例
+        dropout:      0.5           # dropout比例
         use_bias:     True          # 是否使用偏置
         input_dim:    89            # 节点特征维度
         output_dim:   2             # 节点类别数
+        hidden_dim:   16            # 隐层输出特征维度
+        keep_ratio:   0.5           # Pooling后保留的节点比例
     hyper:                        # 训练超参数
-        lr:           0.01          # 优化器初始学习率
-        epochs:       100           # 训练轮次
-        batch_size:   8            # 批数据数量
+        lr:           0.003         # 优化器初始学习率
+        epochs:       1000          # 训练轮次
+        patience:     100           # 早停轮次
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 
@@ -30,14 +33,17 @@ NCI1:      # 使用Cora数据集训练模型
         test_prop:    0.2           # 测试集数据比例
         valid_prop:   0.1           # 验证集数据比例
     model:                        # 模型参数
-        dropout:      0.0           # dropout比例
+        dropout:      0.3           # dropout比例
         use_bias:     True          # 是否使用偏置
         input_dim:    37            # 节点特征维度
         output_dim:   2             # 节点类别数
+        hidden_dim:   64            # 隐层输出特征维度
+        keep_ratio:   0.5           # Pooling后保留的节点比例
     hyper:                        # 训练超参数
-        lr:           0.01          # 优化器初始学习率
-        epochs:       100           # 训练轮次
-        batch_size:   8            # 批数据数量
+        lr:           0.003         # 优化器初始学习率
+        epochs:       1000          # 训练轮次
+        patience:     100           # 早停轮次
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 
@@ -50,14 +56,17 @@ PROTEINS:      # 使用Cora数据集训练模型
         test_prop:    0.2           # 测试集数据比例
         valid_prop:   0.1           # 验证集数据比例
     model:                        # 模型参数
-        dropout:      0.0           # dropout比例
+        dropout:      0.3           # dropout比例
         use_bias:     True          # 是否使用偏置
         input_dim:    4             # 节点特征维度
         output_dim:   2             # 节点类别数
+        hidden_dim:   16            # 隐层输出特征维度
+        keep_ratio:   0.5           # Pooling后保留的节点比例
     hyper:                        # 训练超参数
-        lr:           0.01          # 优化器初始学习率
-        epochs:       100           # 训练轮次
-        batch_size:   8            # 批数据数量
+        lr:           0.003         # 优化器初始学习率
+        epochs:       1000          # 训练轮次
+        patience:     100           # 早停轮次
+        batch_size:   64            # 批数据数量
         weight_decay: 0.0005        # 优化器权重衰减
 
 

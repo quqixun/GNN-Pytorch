@@ -86,7 +86,6 @@ def normalize_adjacency(adjacency):
     values = torch.from_numpy(adjacency.data.astype(np.float32))
     adjacency_tensor = torch.sparse.FloatTensor(indices, values, adjacency.shape)
 
-    # 使用相应的计算设备
     return adjacency_tensor
 
 
@@ -95,14 +94,14 @@ def topk(node_score, graph_batch, keep_ratio):
     """
 
     graph_ids = list(set(graph_batch.cpu().numpy()))
-    mask = node_score.new_empty((0,), dtype=bool)
+    mask = node_score.new_empty((0,), dtype=torch.bool)
 
     for grid_id in graph_ids:
-        graph_node_score = node_score[graph_batch == grid_id]
+        graph_node_score = node_score[graph_batch == grid_id].view(-1)
         _, sorted_index = graph_node_score.sort(descending=True)
 
         num_graph_node = len(graph_node_score)
-        graph_mask = node_score.new_zeros((num_graph_node,), dtype=bool)
+        graph_mask = node_score.new_zeros((num_graph_node,), dtype=torch.bool)
 
         num_keep_node = int(keep_ratio * num_graph_node)
         graph_mask[sorted_index[:num_keep_node]] = True
@@ -126,7 +125,7 @@ def filter_adjacency(adjacency, mask):
     col = col[non_self_loop]
 
     sparse_adjacency = scipy.sparse.csr_matrix(
-        (np.ones(len(row))), (row, col),
+        (np.ones(len(row)), (row, col)),
         shape=(num_nodes, num_nodes),
         dtype=np.float32
     )

@@ -83,7 +83,7 @@ def global_max_pool(X, graph_indicator):
     """
 
     num_graphs = graph_indicator.max().item() + 1
-    max_pool = scatter_max(X, graph_indicator, dim=0, dim_size=num_graphs)
+    max_pool = scatter_max(X, graph_indicator, dim=0, dim_size=num_graphs)[0]
 
     return max_pool
 
@@ -112,7 +112,7 @@ class SelfAttentionPooling(nn.Module):
 
         self.keep_ratio = keep_ratio
         self.act = nn.Tanh()
-        self.gcn = GraphConvolution(input, 1)
+        self.gcn = GraphConvolution(input_dim, 1)
 
         return
 
@@ -124,7 +124,7 @@ class SelfAttentionPooling(nn.Module):
         node_score = self.act(node_score)
 
         mask = topk(node_score, graph_batch, self.keep_ratio)
-        mask_X = X[mask] * node_score.view(-1, 1)
+        mask_X = X[mask] * node_score.view(-1, 1)[mask]
         mask_graph_batch = graph_batch[mask]
         mask_adjacency = filter_adjacency(adjacency, mask)
 
