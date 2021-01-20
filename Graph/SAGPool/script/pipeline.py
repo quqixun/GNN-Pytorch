@@ -63,8 +63,8 @@ class Pipeline(object):
         random.seed(random_state)
         np.random.seed(random_state)
         torch.manual_seed(random_state)
-        torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
 
         return
 

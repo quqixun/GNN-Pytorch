@@ -9,8 +9,6 @@ import torch
 import numpy as np
 
 from itertools import groupby
-from collections import namedtuple
-from scipy.sparse.csr import csr_matrix
 from scipy.sparse.coo import coo_matrix
 
 
@@ -104,6 +102,7 @@ def topk(node_score, graph_batch, keep_ratio):
         graph_mask = node_score.new_zeros((num_graph_node,), dtype=torch.bool)
 
         num_keep_node = int(keep_ratio * num_graph_node)
+        num_keep_node = max(num_keep_node, 1)
         graph_mask[sorted_index[:num_keep_node]] = True
         mask = torch.cat([mask, graph_mask])
 

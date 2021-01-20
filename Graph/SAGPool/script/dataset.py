@@ -31,14 +31,6 @@ class Dataset(object):
             root=dataset_root, name=data, use_node_attr=True
         )
 
-        # print(len(self.dataset))
-        # print(self.dataset.data.x.size())
-        # print(self.dataset.data.y.size())
-        # print(self.dataset.data.edge_index.size())
-        # print(self.dataset.slices['x'].size())
-        # print(self.dataset.slices['y'].size())
-        # print(self.dataset.slices['edge_index'].size())
-
         return
 
     def __split_data(self, **params):

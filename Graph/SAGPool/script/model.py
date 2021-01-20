@@ -106,9 +106,6 @@ class SAGPoolH(nn.Module):
         """
 
         X, graph, batch = data.x, data.edge_index, data.batch
-        # print('here', len(data))
-        # print(X.size(), graph.size(), batch.size())
-
         adjacency = generate_adjacency(X, graph)
         adjacency = normalize_adjacency(adjacency)
         adjacency = adjacency.to(X.device)
@@ -125,13 +122,6 @@ class SAGPoolH(nn.Module):
         X, adjacency, batch = self.sagpool3(X, adjacency, batch)
         readout3 = self.__readout(X, batch)
 
-        # # assert readout1.shape == readout2.shape == readout3.shape
-        # if (readout3.shape[0] != 64) and (readout3.shape[0] != 1):
-        #     # print(gcn3.size())
-        #     # print(X.size(), adjacency3.size(), batch3.size())
-        #     print(readout1.size(), readout2.size(), readout3.size())
-        # # print(readout3.size())
         readout = readout1 + readout2 + readout3
         logits = self.mlp(readout)
-
         return logits
