@@ -44,7 +44,7 @@ class Pipeline(object):
 
         """
 
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = params['device']
         self.__init_environment(params['random_state'])
         self.__build_model(model_name, **params['model'])
         self.__build_components(**params['hyper'])
@@ -63,8 +63,8 @@ class Pipeline(object):
         random.seed(random_state)
         np.random.seed(random_state)
         torch.manual_seed(random_state)
-        torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
         return
 

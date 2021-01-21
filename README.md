@@ -42,13 +42,13 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 
 各方法实验结果(F1-Score)列表：
 
-| Status |                 Method                 |                            Paper                             |  DD  | NCI1 | PROTEINS |
-| :----: | :------------------------------------: | :----------------------------------------------------------: | :--: | :--: | :------: |
-|        |                DiffPool                |  [Ying et al., 2018](https://arxiv.org/pdf/1806.08804.pdf)   |      |      |          |
-|        | [SAGPool<sub>g</sub>](./Graph/SAGPool) |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   |      |      |          |
-|        | [SAGPool<sub>h</sub>](./Graph/SAGPool) |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   |      |      |          |
-|        |              Graph U-Nets              |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |      |      |          |
-|        |               MinCutPool               | [Bianchi et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |      |      |          |
+|       Status       |                 Method                 |                            Paper                             |  DD   | NCI1  | PROTEINS |
+| :----------------: | :------------------------------------: | :----------------------------------------------------------: | :---: | :---: | :------: |
+|                    |                DiffPool                |  [Ying et al., 2018](https://arxiv.org/pdf/1806.08804.pdf)   |       |       |          |
+| :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   | 0.753 | 0.757 |  0.757   |
+| :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) |   [Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf)   | 0.740 | 0.689 |  0.766   |
+|                    |              Graph U-Nets              |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |       |       |          |
+|                    |               MinCutPool               | [Bianchi et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |       |       |          |
 
 <br/>
 
@@ -60,6 +60,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | numpy           | 1.19.4 | pip install numpy==1.19.4                                    |
 | scipy           | 1.5.4  | pip install scipy==1.5.4                                     |
 | pyyaml          | 5.3.1  | pip install pyyaml==5.3.1                                    |
+| scikit-learn    | 0.24.0 | pip install scikit-learn==0.24.0                             |
 | pytorch         | 1.7.0  | cpu：conda install pytorch\==1.7.0 cpuonly -c pytorch<br/>gpu：conda install pytorch\==1.7.0 cudatoolkit=10.2 -c pytorch |
 | torch-geometric | 1.6.3  | [Installation](https://github.com/rusty1s/pytorch_geometric#installation) |
 
