@@ -25,9 +25,9 @@ def train_and_test(model_name, data, dataset_root, config):
     pipeline.train(dataset)
 
     # 测试集准确率
-    test_loss, test_f1 = pipeline.predict(dataset, 'test')
-    print('[{}]-[{}]-[TestLoss:{:.4f}]-[TestF1:{:.3f}]\n'.format(
-        model_name, data.upper(), test_loss, test_f1))
+    test_loss, test_acc = pipeline.predict(dataset, 'test')
+    print('[{}]-[{}]-[TestLoss:{:.4f}]-[TestAcc:{:.3f}]\n'.format(
+        model_name, data.upper(), test_loss, test_acc))
 
     return
 
@@ -42,18 +42,18 @@ if __name__ == '__main__':
 
     # 使用DD数据集训练和测试模型
     train_and_test('SAGPoolG', 'DD', dataset_root, config)
-    # [SAGPoolG] DD Test F1 Score:
+    # [SAGPoolG] DD Test F1 Score: 0.766
     train_and_test('SAGPoolH', 'DD', dataset_root, config)
-    # [SAGPoolH] DD Test F1 Score:
+    # [SAGPoolH] DD Test F1 Score: 0.736
 
     # 使用NCI1数据集训练和测试模型
     train_and_test('SAGPoolG', 'NCI1', dataset_root, config)
-    # [SAGPoolG] NCI1 Test F1 Score: 0.748
+    # [SAGPoolG] NCI1 Test F1 Score: 0.735
     train_and_test('SAGPoolH', 'NCI1', dataset_root, config)
-    # [SAGPoolH] NCI1 Test F1 Score:
+    # [SAGPoolH] NCI1 Test F1 Score: 0.685
 
     # 使用PROTEINS数据集训练和测试模型
     train_and_test('SAGPoolG', 'PROTEINS', dataset_root, config)
-    # [SAGPoolG] PROTEINS Test F1 Score:
+    # [SAGPoolG] PROTEINS Test F1 Score: 0.775
     train_and_test('SAGPoolH', 'PROTEINS', dataset_root, config)
-    # [SAGPoolH] PROTEINS Test F1 Score:
+    # [SAGPoolH] PROTEINS Test F1 Score: 0.743

@@ -9,8 +9,8 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 
-from sklearn.metrics import f1_score
 from .model import SAGPoolG, SAGPoolH
+from sklearn.metrics import accuracy_score
 from torch_geometric.data import DataLoader
 
 
@@ -130,7 +130,7 @@ class Pipeline(object):
         best_model = None
 
         # 记录验证集最佳准确率
-        best_valid_f1 = 0
+        best_valid_acc = 0
 
         # 获得最佳的验证集后计数轮次
         epochs_after_best = 0
@@ -159,16 +159,16 @@ class Pipeline(object):
             # 计算epoch中所有batch的loss的均值
             epoch_loss = np.mean(epoch_losses)
 
-            # 计算验证集loss和F1-Score
-            valid_loss, valid_f1 = self.predict(dataset, 'valid')
+            # 计算验证集loss和Accuracy
+            valid_loss, valid_acc = self.predict(dataset, 'valid')
 
-            print('[Epoch:{:03d}]-[TrainLoss:{:.4f}]-[ValidLoss:{:.4f}]-[ValidF1:{:.4f}]'.format(
-                epoch, epoch_loss, valid_loss, valid_f1))
+            print('[Epoch:{:03d}]-[TrainLoss:{:.4f}]-[ValidLoss:{:.4f}]-[ValidAcc:{:.4f}]'.format(
+                epoch, epoch_loss, valid_loss, valid_acc))
 
-            if valid_f1 >= best_valid_f1:
+            if valid_acc >= best_valid_acc:
                 best_model = copy.deepcopy(self.model)
                 # 获得最佳验证集准确率
-                best_valid_f1 = valid_f1
+                best_valid_acc = valid_acc
                 # 从新计数轮次
                 epochs_after_best = 0
             else:
@@ -226,5 +226,5 @@ class Pipeline(object):
             losses.append(self.criterion(logits, data.y).item())
 
         loss = np.mean(losses)
-        f1 = f1_score(y_true, y_pred, average='macro')
-        return loss, f1
+        acc = accuracy_score(y_true, y_pred)
+        return loss, acc
