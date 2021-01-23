@@ -34,7 +34,7 @@ def load_config(config_file):
 
 
 def generate_adjacency(X, graph):
-    """
+    """根据边列表生成邻接矩阵
     """
 
     num_nodes = X.size(0)
@@ -88,7 +88,7 @@ def normalize_adjacency(adjacency):
 
 
 def topk(node_score, graph_batch, keep_ratio):
-    """
+    """获取每个图的topk个重要的节点
     """
 
     graph_ids = list(set(graph_batch.cpu().numpy()))
@@ -110,7 +110,7 @@ def topk(node_score, graph_batch, keep_ratio):
 
 
 def filter_adjacency(adjacency, mask):
-    """
+    """生成仅包含重要节点的邻接矩阵
     """
 
     device = adjacency.device

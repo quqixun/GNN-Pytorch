@@ -71,6 +71,7 @@ class SAGPoolH(nn.Module):
         super(SAGPoolH, self).__init__()
 
         self.act = nn.ReLU(inplace=True)
+        self.readout = Readout()
 
         self.gcn1 = GraphConvolution(input_dim, hidden_dim, use_bias)
         self.sagpool1 = SelfAttentionPooling(hidden_dim, keep_ratio)
@@ -90,17 +91,6 @@ class SAGPoolH(nn.Module):
 
         return
 
-    def __readout(self, X, batch):
-        """
-        """
-
-        readout = torch.cat([
-            global_avg_pool(X, batch),
-            global_max_pool(X, batch)
-        ], dim=1)
-
-        return readout
-
     def forward(self, data):
         """
         """
@@ -112,15 +102,15 @@ class SAGPoolH(nn.Module):
 
         X = self.act(self.gcn1(adjacency, X))
         X, adjacency, batch = self.sagpool1(X, adjacency, batch)
-        readout1 = self.__readout(X, batch)
+        readout1 = self.readout(X, batch)
 
         X = self.act(self.gcn2(adjacency, X))
         X, adjacency, batch = self.sagpool2(X, adjacency, batch)
-        readout2 = self.__readout(X, batch)
+        readout2 = self.readout(X, batch)
 
         X = self.act(self.gcn3(adjacency, X))
         X, adjacency, batch = self.sagpool3(X, adjacency, batch)
-        readout3 = self.__readout(X, batch)
+        readout3 = self.readout(X, batch)
 
         readout = readout1 + readout2 + readout3
         logits = self.mlp(readout)
