@@ -19,12 +19,12 @@ class Pipeline(object):
     def __init__(self, **params):
         """GAT模型训练与预测
 
-            加载GCN模型, 生成训练必要组件实例
+            加载GAT模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
-                    params = {
+                    {
                         'sparse': False,
                         'random_state' 42,
                         'model': {

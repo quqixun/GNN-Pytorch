@@ -19,14 +19,20 @@ class Pipeline(object):
     """
 
     def __init__(self, model_name, **params):
-        """FastGCN训练与预测
+        """SAGPool训练与预测
 
-            加载GCN模型, 生成训练必要组件实例
+            加载SAGPool模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
-                    params = {
+                    {
+                        'device': 'cpu',
+                        'random_state': 42,
+                        'split': {
+                            'test_prop': 0.2,
+                            'valid_prop': 0.1
+                        },
                         'model': {
                             'input_dim': 1433,
                             'output_dim': 7,
@@ -44,6 +50,7 @@ class Pipeline(object):
 
         """
 
+        # 使用的计算设备, 使用cpu时实验结果可复现
         self.device = params['device']
         self.__init_environment(params['random_state'])
         self.__build_model(model_name, **params['model'])
@@ -77,9 +84,11 @@ class Pipeline(object):
 
         """
 
+        # 选择使用的模型结构
         assert model_name in ['SAGPoolG', 'SAGPoolH']
-
         model_class = SAGPoolG if model_name == 'SAGPoolG' else SAGPoolH
+
+        # 加载模型
         self.model = model_class(**model_params)
         self.model.to(self.device)
 
@@ -115,7 +124,7 @@ class Pipeline(object):
 
             Input:
             ------
-            dataset: Dataset
+            dataset: Dataset, 包含test、valid和train
 
         """
 
@@ -188,12 +197,12 @@ class Pipeline(object):
 
             Inputs:
             -------
-            dataset: Data, 包含X, y, adjacency, test_index,
-                     train_index和valid_index
-            split: string, 待预测的节点
+            dataset: Dataset, 包含test、valid和train
+            split: string, 使用的数据集划分
 
             Output:
             -------
+            loss: float, 数据集样本平均损失
             accuracy: float, 节点分类准确率
 
         """
@@ -201,7 +210,7 @@ class Pipeline(object):
         # 模型推断模式
         self.model.eval()
 
-        # 节点mask
+        # 使用的数据集划分
         if split == 'train':
             eval_dataset = dataset.train
         elif split == 'valid':
@@ -209,11 +218,13 @@ class Pipeline(object):
         else:  # split == 'test'
             eval_dataset = dataset.test
 
+        # 数据集样本加载器, 每个batch加载1个样本
         eval_loader = DataLoader(
             dataset=eval_dataset,
             batch_size=1, shuffle=False
         )
 
+        # 用于记录每个样本的损失、标签和预测类别
         losses, y_true, y_pred = [], [], []
         for i, data in enumerate(eval_loader):
             # 模型输出
@@ -225,6 +236,8 @@ class Pipeline(object):
             y_pred.append(data.y.cpu().numpy()[0])
             losses.append(self.criterion(logits, data.y).item())
 
+        # 计算所有样本的平均损失
         loss = np.mean(losses)
+        # 计算准确率
         acc = accuracy_score(y_true, y_pred)
         return loss, acc

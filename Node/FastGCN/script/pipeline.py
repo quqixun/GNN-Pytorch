@@ -21,12 +21,13 @@ class Pipeline(object):
     def __init__(self, **params):
         """FastGCN训练与预测
 
-            加载GCN模型, 生成训练必要组件实例
+            加载FastGCN模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
-                    params = {
+                    {
+                        'random_state': 42,
                         'model': {
                             'input_dim': 1433,
                             'output_dim': 7,

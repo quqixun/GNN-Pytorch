@@ -20,12 +20,13 @@ class Pipeline(object):
     def __init__(self, **params):
         """GraphSAGE模型训练与预测
 
-            加载GCN模型, 生成训练必要组件实例
+            加载GraphSAGE模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
                     {
+                        'random_state': 42,
                         'model': {
                             'input_dim': 1433,
                             'hidden_dims': [128, 7],

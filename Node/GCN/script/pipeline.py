@@ -24,7 +24,8 @@ class Pipeline(object):
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
-                    params = {
+                    {
+                        'random_state': 42,
                         'model': {
                             'input_dim': 1433,
                             'output_dim': 7,
