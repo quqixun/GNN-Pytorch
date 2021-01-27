@@ -32,7 +32,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 
 ## 图分类 - Graph Classification
 
-使用的数据集列表，更多的数据集见[Benchmark Data Sets for Graph Kernels](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets)，有条件可以使用[OGB数据集](https://github.com/snap-stanford/ogb)：
+使用的数据集列表，更多的数据集见[TUDataset](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets)，有条件可以使用[OGB数据集](https://github.com/snap-stanford/ogb)：
 
 | Dataset  | Graphs | Avg. Nodes | Avg. Edges | Node Attr. | Classes | Train | Valid | Test |
 | :------: | :----: | :--------: | :--------: | :--------: | :-----: | :---: | :---: | :--: |
@@ -48,7 +48,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.753 | 0.757 |  0.757   |
 | :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.740 | 0.689 |  0.766   |
 |                    |              Graph U-Nets              |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |       |       |          |
-|                    |               MinCutPool               | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |       |       |          |
+|                    |       [MinCutPool](./MinCutPool)       | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |       |       |          |
 
 <br/>
 
