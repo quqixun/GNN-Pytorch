@@ -48,7 +48,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.753 | 0.757 |  0.757   |
 | :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.740 | 0.689 |  0.766   |
 |                    |              Graph U-Nets              |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |       |       |          |
-|                    |       [MinCutPool](./MinCutPool)       | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |       |       |          |
+|                    |    [MinCutPool](./Graph/MinCutPool)    | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) |       |       |          |
 
 <br/>
 
