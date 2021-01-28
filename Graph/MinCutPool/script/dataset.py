@@ -36,8 +36,8 @@ class Dataset(object):
 
         assert data in ['DD', 'NCI1', 'PROTEINS'], 'uknown dataset'
 
-        print('Downloading and Preprocessing [{}] Dataset ...'.format(data.upper()))
         # 下载并预处理相关数据集
+        print('Downloading and Preprocessing [{}] Dataset ...'.format(data.upper()))
         self.dataset = TUDataset(
             root=dataset_root, name=data, use_node_attr=True
         )
@@ -79,6 +79,8 @@ class Dataset(object):
         self.test = self.dataset[test_indices]
         self.valid = self.dataset[valid_indices]
         self.train = self.dataset[train_indices]
+        # 获得训练集中所有图所包含的平均节点数量
+        self.avg_nodes = int(self.train.data.x.size(0) / len(self.train))
 
         # 每一组数据使用方法, 以self.test为例
         # 使用Dataloader加载batch

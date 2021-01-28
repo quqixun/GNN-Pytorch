@@ -63,8 +63,9 @@ class GraphConvolution(nn.Module):
 
         """
 
-        support = torch.mm(X, self.weight)
-        output = torch.sparse.mm(adjacency, support)
+        weight = torch.cat([self.weight.unsqueeze(0)] * X.size(0))
+        support = torch.bmm(X, weight)
+        output = torch.bmm(adjacency, support)
         if self.use_bias:
             output += self.bias
 
@@ -79,18 +80,57 @@ class DenseGraphConvolution(nn.Module):
     """
     """
 
-    def __init__(self):
+    def __init__(self, input_dim, output_dim, aggregate='sum', use_bias=True):
         """
         """
 
         super(DenseGraphConvolution, self).__init__()
 
-        self.linear1 = nn.Linear(8, 8)
-        self.linear2 = nn.Linear(8, 8)
+        assert aggregate in ['sum', 'max', 'mean'], 'unknown aggregate'
+        self.aggregate = aggregate
+
+        self.linear1 = nn.Linear(input_dim, output_dim, bias=False)
+        self.linear2 = nn.Linear(input_dim, output_dim, bias=use_bias)
 
         return
 
-    def forward(self, data):
+    def forward(self, adjacency, X):
+        """
+        """
+
+        # self.aggregate == 'sum'
+        output = self.linear1(torch.matmul(adjacency, X))
+
+        if self.aggregate == 'max':
+            output = output.max(dim=-1, keepdim=True)[0]
+        elif self.aggregate == 'mean':
+            output = output / output.sum(dim=-1, keepdim=True)
+        else:
+            pass
+
+        output = output + self.linear2(X)
+        print(output.size())
+
+        return output
+
+
+# ----------------------------------------------------------------------------
+# MinCutPooling层
+
+
+class MinCutPooling(nn.Module):
+    """
+    """
+
+    def __init__(self):
+        """
+        """
+
+        super(MinCutPooling, self).__init__()
+
+        return
+
+    def forward(self):
         """
         """
 

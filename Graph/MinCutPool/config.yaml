@@ -13,6 +13,7 @@ DD:      # 使用Cora数据集训练模型
     model:                        # 模型参数
         dropout:      0.5           # dropout比例
         use_bias:     True          # 是否使用偏置
+        aggregate:    'sum'         # 节点特征聚合方式
         input_dim:    89            # 节点特征维度
         output_dim:   2             # 节点类别数
         hidden_dim:   64            # 隐层输出特征维度
@@ -36,6 +37,7 @@ NCI1:      # 使用Cora数据集训练模型
     model:                        # 模型参数
         dropout:      0.3           # dropout比例
         use_bias:     True          # 是否使用偏置
+        aggregate:    'max'         # 节点特征聚合方式
         input_dim:    37            # 节点特征维度
         output_dim:   2             # 节点类别数
         hidden_dim:   64            # 隐层输出特征维度
@@ -59,6 +61,7 @@ PROTEINS:      # 使用Cora数据集训练模型
     model:                        # 模型参数
         dropout:      0.5           # dropout比例
         use_bias:     True          # 是否使用偏置
+        aggregate:    'sum'         # 节点特征聚合方式
         input_dim:    4             # 节点特征维度
         output_dim:   2             # 节点类别数
         hidden_dim:   64            # 隐层输出特征维度

@@ -9,7 +9,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 
-from .model import MinCutPool
+from .model import MinCutPoolModel
 from sklearn.metrics import accuracy_score
 from torch_geometric.data import DataLoader
 
@@ -84,7 +84,7 @@ class Pipeline(object):
         """
 
         # 加载模型
-        self.model = MinCutPool()
+        self.model = MinCutPoolModel(**model_params)
         self.model.to(self.device)
 
         return

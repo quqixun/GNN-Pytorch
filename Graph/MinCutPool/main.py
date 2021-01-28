@@ -20,6 +20,7 @@ def train_and_test(data, dataset_root, config):
     dataset = Dataset(data, dataset_root, **config[data])
 
     # 训练模型
+    config[data]['model']['avg_nodes'] = dataset.avg_nodes
     pipeline = Pipeline(**config[data])
     pipeline.train(dataset)
 
