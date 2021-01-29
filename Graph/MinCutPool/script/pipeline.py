@@ -149,43 +149,42 @@ class Pipeline(object):
             for i, data in enumerate(train_loader):
                 # 模型输出
                 data = data.to(self.device)
-                logits = self.model(data)
+                logits, pool_loss = self.model(data)
+
+                # 计算损失函数
+                loss = self.criterion(logits, data.y)
+                loss += pool_loss
+                epoch_losses.append(loss.item())
+
+                # 反向传播
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+            # 计算epoch中所有batch的loss的均值
+            epoch_loss = np.mean(epoch_losses)
+
+            # 计算验证集loss和Accuracy
+            valid_loss, valid_acc = self.predict(dataset, 'valid')
+
+            print('[Epoch:{:03d}]-[TrainLoss:{:.4f}]-[ValidLoss:{:.4f}]-[ValidAcc:{:.4f}]'.format(
+                epoch, epoch_loss, valid_loss, valid_acc))
+
+            if valid_acc >= best_valid_acc:
+                best_model = copy.deepcopy(self.model)
+                # 获得最佳验证集准确率
+                best_valid_acc = valid_acc
+                # 从新计数轮次
+                epochs_after_best = 0
+            else:
+                # 未获得最佳验证集准确率
+                # 增加计数轮次
+                epochs_after_best += 1
+
+            if epochs_after_best == self.patience:
+                # 符合早停条件
+                self.model = best_model
                 break
-            break
-
-            #     # 计算损失函数
-            #     loss = self.criterion(logits, data.y)
-            #     epoch_losses.append(loss.item())
-
-            #     # 反向传播
-            #     self.optimizer.zero_grad()
-            #     loss.backward()
-            #     self.optimizer.step()
-
-            # # 计算epoch中所有batch的loss的均值
-            # epoch_loss = np.mean(epoch_losses)
-
-            # # 计算验证集loss和Accuracy
-            # valid_loss, valid_acc = self.predict(dataset, 'valid')
-
-            # print('[Epoch:{:03d}]-[TrainLoss:{:.4f}]-[ValidLoss:{:.4f}]-[ValidAcc:{:.4f}]'.format(
-            #     epoch, epoch_loss, valid_loss, valid_acc))
-
-            # if valid_acc >= best_valid_acc:
-            #     best_model = copy.deepcopy(self.model)
-            #     # 获得最佳验证集准确率
-            #     best_valid_acc = valid_acc
-            #     # 从新计数轮次
-            #     epochs_after_best = 0
-            # else:
-            #     # 未获得最佳验证集准确率
-            #     # 增加计数轮次
-            #     epochs_after_best += 1
-
-            # if epochs_after_best == self.patience:
-            #     # 符合早停条件
-            #     self.model = best_model
-            #     break
 
         return
 
@@ -226,12 +225,14 @@ class Pipeline(object):
         for i, data in enumerate(eval_loader):
             # 模型输出
             data = data.to(self.device)
-            logits = self.model(data)
+            logits, pool_loss = self.model(data)
             predict_y = logits.max(1)[1]
+            loss = self.criterion(logits, data.y)
+            loss += pool_loss
 
             y_true.append(predict_y.cpu().numpy()[0])
             y_pred.append(data.y.cpu().numpy()[0])
-            losses.append(self.criterion(logits, data.y).item())
+            losses.append(loss.item())
 
         # 计算所有样本的平均损失
         loss = np.mean(losses)

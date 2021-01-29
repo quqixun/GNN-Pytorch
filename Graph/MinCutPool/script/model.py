@@ -21,18 +21,22 @@ class MinCutPoolModel(nn.Module):
         """
         """
 
-        super(MinCutPool, self).__init__()
+        super(MinCutPoolModel, self).__init__()
 
         self.conv1 = GraphConvolution(input_dim, hidden_dim, use_bias)
         self.conv2 = DenseGraphConvolution(hidden_dim, hidden_dim, aggregate, use_bias)
         self.conv3 = DenseGraphConvolution(hidden_dim, hidden_dim, aggregate, use_bias)
 
         self.act = nn.ReLU(inplace=True)
-        self.pool1 = nn.Linear(hidden_dim, ceil(0.5 * avg_nodes))
-        self.pool2 = nn.Linear(hidden_dim, ceil(0.25 * avg_nodes))
+        self.cluster1 = nn.Linear(hidden_dim, ceil(0.5 * avg_nodes))
+        self.cluster2 = nn.Linear(hidden_dim, ceil(0.25 * avg_nodes))
+
+        self.mincutpool = MinCutPooling()
 
         self.mlp = nn.Sequential(
-
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_dim, output_dim)
         )
 
         return
@@ -58,20 +62,19 @@ class MinCutPoolModel(nn.Module):
         # batch:     [b, Nmax],       每张图中的有效节点索引
         # adjacency: [b, Nmax, Nmax], 每张图的邻接矩阵
         adjacency = to_dense_adj(graph, batch)
-        X, batch = to_dense_batch(X, batch)
+        # a0 = to_dense_adj(graph, batch)
+        x0, batch = to_dense_batch(X, batch)
+        a0 = batch_normalize_adjacency(adjacency, batch)
 
-        # batch中对每张图的邻接矩阵做正则化
-        norm_adjacency = []
-        for adj, b in zip(adjacency, batch):
-            norm_adj = normalize_adjacency(adj, b)
-            norm_adj = norm_adj.unsqueeze(0)
-            norm_adjacency.append(norm_adj)
-        adjacency = torch.cat(norm_adjacency)
+        x1 = self.act(self.conv1(a0, x0))
+        s1 = self.cluster1(x1)
+        x1, a1, loss1 = self.mincutpool(x1, a0, s1, batch)
 
-        x1 = self.act(self.conv1(adjacency, X))
-        cluster1 = self.pool1(x1)
-        print(conv1.size(), cluster1.size())
+        x2 = self.act(self.conv2(a1, x1))
+        s2 = self.cluster2(x2)
+        x2, a2, loss2 = self.mincutpool(x2, a1, s2)
 
-        # conv2 = self.conv2(adjacency, conv1)
+        x3 = self.act(self.conv3(a2, x2).mean(dim=1))
+        output = self.mlp(x3)
 
-        return
+        return output, loss1 + loss2

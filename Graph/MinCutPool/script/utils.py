@@ -63,3 +63,20 @@ def normalize_adjacency(adjacency, batch):
     adjacency_tensor = adjacency_tensor.to(device)
 
     return adjacency_tensor
+
+
+def batch_normalize_adjacency(adjacency, batch):
+    """对batch中每张图的邻接矩阵做正则化
+    """
+
+    device = adjacency.device
+
+    norm_adjacency = []
+    for adj, b in zip(adjacency, batch):
+        norm_adj = normalize_adjacency(adj, b)
+        norm_adj = norm_adj.unsqueeze(0)
+        norm_adjacency.append(norm_adj)
+    norm_adjacency = torch.cat(norm_adjacency)
+    norm_adjacency = norm_adjacency.to(device)
+
+    return norm_adjacency

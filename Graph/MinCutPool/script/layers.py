@@ -109,7 +109,6 @@ class DenseGraphConvolution(nn.Module):
             pass
 
         output = output + self.linear2(X)
-        print(output.size())
 
         return output
 
@@ -122,16 +121,46 @@ class MinCutPooling(nn.Module):
     """
     """
 
-    def __init__(self):
+    def forward(self, X, A, S, batch=None):
         """
         """
 
-        super(MinCutPooling, self).__init__()
+        device = X.device
 
-        return
+        if batch is not None:
+            batch = batch.unsqueeze(-1)
+            X, S = X * batch, S * batch
 
-    def forward(self):
-        """
-        """
+        # mincut loss
+        S = torch.softmax(S, dim=-1)
+        X_pool = torch.matmul(S.transpose(1, 2), X)
+        A_pool = torch.matmul(torch.matmul(S.transpose(1, 2), A), S)
+        mincut_num = [torch.trace(n).item() for n in A_pool]
+        mincut_num = torch.FloatTensor(mincut_num).to(device)
 
-        return
+        D = torch.cat([torch.diag(d).unsqueeze(0) for d in torch.sum(A, dim=-1)])
+        D_pool = torch.matmul(torch.matmul(S.transpose(1, 2), D), S)
+        mincut_den = [torch.trace(d) for d in D_pool]
+        mincut_den = torch.FloatTensor(mincut_den).to(device)
+
+        mincut_loss = -1 * torch.mean(mincut_num / mincut_den)
+
+        # orthogonality loss
+        St_S = torch.matmul(S.transpose(1, 2), S)
+        num_clusters = St_S.size(-1)
+        I_S = torch.eye(num_clusters).to(device)
+
+        St_S_norm = St_S / torch.norm(St_S, dim=(-1, -2), keepdim=True)
+        I_S_norm = I_S / torch.norm(I_S, dim=(-1, -2))
+        ortho_loss = torch.norm(St_S_norm - I_S_norm, dim=(-1, -2))
+        ortho_loss = torch.mean(ortho_loss)
+
+        # 正则化A_pool
+        # 将A_pool中每个邻接矩阵的对角线元素置0
+        index = torch.arange(num_clusters, device=device)
+        A_pool[:, index, index] = 0
+        D_pool = torch.sum(A_pool, dim=-1)
+        D_pool = torch.sqrt(D_pool)[:, None] + 1e-12
+        A_pool = (A_pool / D_pool) / D_pool.transpose(2, 1)
+
+        return X_pool, A_pool, mincut_loss + ortho_loss

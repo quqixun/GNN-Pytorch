@@ -29,24 +29,24 @@ DD:      # 使用Cora数据集训练模型
 # -------------------------------------------------------------------
 NCI1:      # 使用Cora数据集训练模型
 # -------------------------------------------------------------------
-    device:           'cpu'       # 使用的计算设备, cpu可复现结果
+    device:           'cuda'       # 使用的计算设备, cpu可复现结果
     random_state:     42          # 随机种子
     split:                        # 数据划分
         test_prop:    0.2           # 测试集数据比例
         valid_prop:   0.1           # 验证集数据比例
     model:                        # 模型参数
-        dropout:      0.3           # dropout比例
+        dropout:      0.0           # dropout比例
         use_bias:     True          # 是否使用偏置
-        aggregate:    'max'         # 节点特征聚合方式
+        aggregate:    'sum'         # 节点特征聚合方式
         input_dim:    37            # 节点特征维度
         output_dim:   2             # 节点类别数
-        hidden_dim:   64            # 隐层输出特征维度
+        hidden_dim:   32            # 隐层输出特征维度
     hyper:                        # 训练超参数
-        lr:           0.003         # 优化器初始学习率
+        lr:           0.0005         # 优化器初始学习率
         epochs:       1000          # 训练轮次
         patience:     100           # 早停轮次
-        batch_size:   64            # 批数据数量
-        weight_decay: 0.0005        # 优化器权重衰减
+        batch_size:   16            # 批数据数量
+        weight_decay: 0.0001        # 优化器权重衰减
 
 
 
