@@ -127,31 +127,38 @@ class MinCutPooling(nn.Module):
 
         device = X.device
 
+        num_clusters = S.size(-1)
+        S = torch.softmax(S, dim=-1)
+
         if batch is not None:
-            batch = batch.unsqueeze(-1)
+            batch = batch.unsqueeze(-1) * 1.0
             X, S = X * batch, S * batch
 
         # mincut loss
-        S = torch.softmax(S, dim=-1)
         X_pool = torch.matmul(S.transpose(1, 2), X)
         A_pool = torch.matmul(torch.matmul(S.transpose(1, 2), A), S)
-        mincut_num = [torch.trace(n).item() for n in A_pool]
-        mincut_num = torch.FloatTensor(mincut_num).to(device)
+        # mincut_num = [torch.trace(n).item() for n in A_pool]
+        # mincut_num = torch.FloatTensor(mincut_num).to(device)
+        mincut_num = torch.einsum('ijj->i', A_pool)
 
-        D = torch.cat([torch.diag(d).unsqueeze(0) for d in torch.sum(A, dim=-1)])
+        D_flat = torch.sum(A, dim=-1)
+        # D = torch.cat([torch.diag(d).unsqueeze(0) for d in D_flat]).to(device)
+        D_eye = torch.eye(D_flat.size(1)).type_as(A).to(device)
+        D_flat = D_flat.unsqueeze(2).expand(*D_flat.size(), D_flat.size(1))
+        D = D_eye * D_flat
+
         D_pool = torch.matmul(torch.matmul(S.transpose(1, 2), D), S)
-        mincut_den = [torch.trace(d) for d in D_pool]
-        mincut_den = torch.FloatTensor(mincut_den).to(device)
-
+        # mincut_den = [torch.trace(d).item() for d in D_pool]
+        # mincut_den = torch.FloatTensor(mincut_den).to(device)
+        mincut_den = torch.einsum('ijj->i', D_pool)
         mincut_loss = -1 * torch.mean(mincut_num / mincut_den)
 
         # orthogonality loss
         St_S = torch.matmul(S.transpose(1, 2), S)
-        num_clusters = St_S.size(-1)
         I_S = torch.eye(num_clusters).to(device)
 
         St_S_norm = St_S / torch.norm(St_S, dim=(-1, -2), keepdim=True)
-        I_S_norm = I_S / torch.norm(I_S, dim=(-1, -2))
+        I_S_norm = I_S / torch.norm(I_S)
         ortho_loss = torch.norm(St_S_norm - I_S_norm, dim=(-1, -2))
         ortho_loss = torch.mean(ortho_loss)
 
@@ -160,7 +167,7 @@ class MinCutPooling(nn.Module):
         index = torch.arange(num_clusters, device=device)
         A_pool[:, index, index] = 0
         D_pool = torch.sum(A_pool, dim=-1)
-        D_pool = torch.sqrt(D_pool)[:, None] + 1e-12
-        A_pool = (A_pool / D_pool) / D_pool.transpose(2, 1)
+        D_pool = torch.sqrt(D_pool)[:, None] + 1e-15
+        A_pool = (A_pool / D_pool) / D_pool.transpose(1, 2)
 
         return X_pool, A_pool, mincut_loss + ortho_loss

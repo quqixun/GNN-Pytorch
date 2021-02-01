@@ -1,4 +1,4 @@
-"""SAGPool训练与预测
+"""MinCutPool训练与预测
 """
 
 
@@ -15,19 +15,18 @@ from torch_geometric.data import DataLoader
 
 
 class Pipeline(object):
-    """SAGPool训练与预测
+    """MinCutPool训练与预测
     """
 
     def __init__(self, **params):
         """SAGPool训练与预测
 
-            加载SAGPool模型, 生成训练必要组件实例
+            加载MinCutPool模型, 生成训练必要组件实例
 
             Input:
             ------
             params: dict, 模型参数和超参数, 格式为:
                     {
-                        'device': 'cpu',
                         'random_state': 42,
                         'split': {
                             'test_prop': 0.2,
@@ -50,7 +49,7 @@ class Pipeline(object):
 
         """
 
-        self.device = params['device']
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])

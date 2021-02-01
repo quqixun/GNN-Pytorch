@@ -2,7 +2,6 @@
 """
 
 
-import torch
 import torch.nn as nn
 
 from .utils import *
@@ -34,6 +33,7 @@ class MinCutPoolModel(nn.Module):
         self.mincutpool = MinCutPooling()
 
         self.mlp = nn.Sequential(
+            nn.Dropout(p=dropout),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(inplace=True),
             nn.Linear(hidden_dim, output_dim)
@@ -62,7 +62,6 @@ class MinCutPoolModel(nn.Module):
         # batch:     [b, Nmax],       每张图中的有效节点索引
         # adjacency: [b, Nmax, Nmax], 每张图的邻接矩阵
         adjacency = to_dense_adj(graph, batch)
-        # a0 = to_dense_adj(graph, batch)
         x0, batch = to_dense_batch(X, batch)
         a0 = batch_normalize_adjacency(adjacency, batch)
 

@@ -25,9 +25,9 @@ def train_and_test(data, dataset_root, config):
     pipeline.train(dataset)
 
     # 测试集准确率
-    # test_loss, test_acc = pipeline.predict(dataset, 'test')
-    # print('[{}]-[TestLoss:{:.4f}]-[TestAcc:{:.3f}]\n'.format(
-    #     data.upper(), test_loss, test_acc))
+    test_loss, test_acc = pipeline.predict(dataset, 'test')
+    print('[{}]-[TestLoss:{:.4f}]-[TestAcc:{:.3f}]\n'.format(
+        data.upper(), test_loss, test_acc))
 
     return
 
@@ -41,13 +41,13 @@ if __name__ == '__main__':
     config = load_config(config_file='config.yaml')
 
     # 使用DD数据集训练和测试模型
-    # train_and_test('DD', dataset_root, config)
-    # DD Test Accuracy:
+    train_and_test('DD', dataset_root, config)
+    # DD Test Accuracy: 0.740
 
     # 使用NCI1数据集训练和测试模型
-    train_and_test('NCI1', dataset_root, config)
-    # NCI1 Test Accuracy:
+    # train_and_test('NCI1', dataset_root, config)
+    # NCI1 Test Accuracy: 0.751
 
     # 使用PROTEINS数据集训练和测试模型
     # train_and_test('PROTEINS', dataset_root, config)
-    # PROTEINS Test Accuracy:
+    # PROTEINS Test Accuracy: 0.761
