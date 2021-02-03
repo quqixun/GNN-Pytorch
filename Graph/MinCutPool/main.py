@@ -42,12 +42,12 @@ if __name__ == '__main__':
 
     # 使用DD数据集训练和测试模型
     train_and_test('DD', dataset_root, config)
-    # DD Test Accuracy: 0.740
+    # DD Test Accuracy: 0.774
 
     # 使用NCI1数据集训练和测试模型
-    # train_and_test('NCI1', dataset_root, config)
+    train_and_test('NCI1', dataset_root, config)
     # NCI1 Test Accuracy: 0.751
 
     # 使用PROTEINS数据集训练和测试模型
-    # train_and_test('PROTEINS', dataset_root, config)
+    train_and_test('PROTEINS', dataset_root, config)
     # PROTEINS Test Accuracy: 0.761

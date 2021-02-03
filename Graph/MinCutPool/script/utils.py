@@ -4,7 +4,6 @@
 
 import os
 import yaml
-import scipy
 import torch
 import numpy as np
 
@@ -38,7 +37,9 @@ def normalize_adjacency(adjacency, batch):
 
         Input:
         ------
-        adjacency: sparse numpy array, 邻接矩阵
+        adjacency: tensor in shape (Nmax, Nmax), 邻接矩阵
+        batch: tensor in shape (Nmax,), 指明此图中有效节点索引,
+               无效节点的邻接矩阵部分为0
 
         Output:
         -------
@@ -46,7 +47,7 @@ def normalize_adjacency(adjacency, batch):
 
     """
 
-    device = adjacency.device
+    # 转换为numpy array
     adjacency = adjacency.detach().cpu().numpy()
     batch = np.logical_not(batch.detach().cpu().numpy())
 
@@ -56,27 +57,40 @@ def normalize_adjacency(adjacency, batch):
     d_hat = np.diag(np.power(degree, -0.5).flatten())
     adjacency = d_hat.dot(adjacency).dot(d_hat)
 
+    # 邻接矩阵无效节点的部分置0
     adjacency[batch, :] = 0
     adjacency[:, batch] = 0
 
     adjacency_tensor = torch.FloatTensor(adjacency)
-    adjacency_tensor = adjacency_tensor.to(device)
-
     return adjacency_tensor
 
 
 def batch_normalize_adjacency(adjacency, batch):
     """对batch中每张图的邻接矩阵做正则化
+
+        Input:
+        ------
+        adjacency: tensor in shape (batch_size, Nmax, Nmax),
+                   一个batch的邻接矩阵
+        batch: tensor in shape (batch_size, Nmax),
+               一个batch中, 指明每张图的有效节点索引
+
+        Output:
+        -------
+        norm_adjacency: tensor in shape (batch_size, Nmax, Nmax),
+                        正则化后的邻接矩阵
+
     """
 
     device = adjacency.device
 
     norm_adjacency = []
     for adj, b in zip(adjacency, batch):
+        # 遍历batch中每张图, 对每张图做正则化
         norm_adj = normalize_adjacency(adj, b)
         norm_adj = norm_adj.unsqueeze(0)
         norm_adjacency.append(norm_adj)
+
     norm_adjacency = torch.cat(norm_adjacency)
     norm_adjacency = norm_adjacency.to(device)
-
     return norm_adjacency

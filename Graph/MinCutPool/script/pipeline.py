@@ -33,16 +33,18 @@ class Pipeline(object):
                             'valid_prop': 0.1
                         },
                         'model': {
-                            'input_dim': 1433,
-                            'output_dim': 7,
+                            'input_dim': 89,
+                            'output_dim': 2,
                             'hidden_dim': 16,
                             'use_bias': True,
-                            'dropout': 0.5
+                            'dropout': 0.2,
+                            'aggregate': 'sum'
                         },
                         'hyper': {
-                            'lr': 1e-2,
-                            'epochs': 100,
-                            'batch_size': 64,
+                            'lr': 1e-3,
+                            'epochs': 50,
+                            'patience': 50,
+                            'batch_size': 8,
                             'weight_decay': 5e-4
                         }
                     }

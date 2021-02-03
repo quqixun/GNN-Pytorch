@@ -54,12 +54,12 @@ class GraphConvolution(nn.Module):
 
             Inputs:
             -------
-            adjacency: tensor in shape [num_nodes, num_nodes], 邻接矩阵
-            X: tensor in shape [num_nodes, input_dim], 节点特征
+            adjacency: tensor in shape [batch_size, num_nodes, num_nodes], 邻接矩阵
+            X: tensor in shape [batch_size, num_nodes, input_dim], 节点特征
 
             Output:
             -------
-            output: tensor in shape [num_nodes, output_dim], 输出
+            output: tensor in shape [batch_size, num_nodes, output_dim], 输出
 
         """
 
@@ -77,11 +77,14 @@ class GraphConvolution(nn.Module):
 
 
 class DenseGraphConvolution(nn.Module):
-    """
+    """DenseGraphConv层
+
+        定义节点特征聚合方式
+
     """
 
     def __init__(self, input_dim, output_dim, aggregate='sum', use_bias=True):
-        """
+        """DenseGraphConv层
         """
 
         super(DenseGraphConvolution, self).__init__()
@@ -95,7 +98,7 @@ class DenseGraphConvolution(nn.Module):
         return
 
     def forward(self, adjacency, X):
-        """
+        """DenseGraphConv层前馈
         """
 
         # self.aggregate == 'sum'
