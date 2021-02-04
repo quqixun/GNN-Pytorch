@@ -79,12 +79,21 @@ class GraphConvolution(nn.Module):
 class DenseGraphConvolution(nn.Module):
     """DenseGraphConv层
 
-        定义节点特征聚合方式
+        Weisfeiler and Leman Go Neural: Higher-order Graph Neural Networks
+        https://arxiv.org/pdf/1810.02244.pdf
 
     """
 
     def __init__(self, input_dim, output_dim, aggregate='sum', use_bias=True):
         """DenseGraphConv层
+
+            Inputs:
+            -------
+            input_dim: int, 节点特征数量
+            output_dim: int, 输出特征数量
+            aggregate: string, 节点聚合方式
+            use_bias: boolean, 是否使用偏置
+
         """
 
         super(DenseGraphConvolution, self).__init__()
@@ -99,6 +108,16 @@ class DenseGraphConvolution(nn.Module):
 
     def forward(self, adjacency, X):
         """DenseGraphConv层前馈
+
+            Inputs:
+            -------
+            adjacency: tensor in shape [batch_size, num_nodes, num_nodes], 邻接矩阵
+            X: tensor in shape [batch_size, num_nodes, input_dim], 节点特征
+
+            Output:
+            -------
+            output: tensor in shape [batch_size, num_nodes, output_dim], 输出
+
         """
 
         # self.aggregate == 'sum'
@@ -121,24 +140,42 @@ class DenseGraphConvolution(nn.Module):
 
 
 class MinCutPooling(nn.Module):
-    """
+    """MinCutPooling层
     """
 
     def forward(self, X, A, S, batch=None):
-        """
+        """MinCutPooling层前馈
+
+            下面的方法使用的是torch_geometric.nn.dense_mincut_pool的实现
+            注释的语句与其下方对应的语句前馈的结果相同, 可以直观地了解具体做了什么操作
+
+            Inputs:
+            -------
+            X: tensor in shape [batch_size, num_nodes, num_feats], 节点特征
+            A: tensor in shape [batch_size, num_nodes, num_nodes], 邻接矩阵
+            S: tensor in shape [batch_size, num_nodes, num_clusters], 节点聚类结果
+            batch: tensor in shape [batch_size, num_nodes], 每张图中的有效节点索引
+
         """
 
+        # 计算设备
         device = X.device
 
+        # 节点聚类的类别数
         num_clusters = S.size(-1)
+
+        # 聚类结果概率化
         S = torch.softmax(S, dim=-1)
 
         if batch is not None:
+            # 仅保留有效节点的特征和邻接矩阵
             batch = batch.unsqueeze(-1) * 1.0
             X, S = X * batch, S * batch
 
-        # mincut loss
+        # 节点聚类后, 聚合同一类的节点特征
         X_pool = torch.matmul(S.transpose(1, 2), X)
+
+        # 计算mincut loss
         A_pool = torch.matmul(torch.matmul(S.transpose(1, 2), A), S)
         # mincut_num = [torch.trace(n).item() for n in A_pool]
         # mincut_num = torch.FloatTensor(mincut_num).to(device)
@@ -156,7 +193,7 @@ class MinCutPooling(nn.Module):
         mincut_den = torch.einsum('ijj->i', D_pool)
         mincut_loss = -1 * torch.mean(mincut_num / mincut_den)
 
-        # orthogonality loss
+        # 计算orthogonality loss
         St_S = torch.matmul(S.transpose(1, 2), S)
         I_S = torch.eye(num_clusters).to(device)
 
@@ -166,11 +203,12 @@ class MinCutPooling(nn.Module):
         ortho_loss = torch.mean(ortho_loss)
 
         # 正则化A_pool
-        # 将A_pool中每个邻接矩阵的对角线元素置0
         index = torch.arange(num_clusters, device=device)
         A_pool[:, index, index] = 0
         D_pool = torch.sum(A_pool, dim=-1)
         D_pool = torch.sqrt(D_pool)[:, None] + 1e-15
         A_pool = (A_pool / D_pool) / D_pool.transpose(1, 2)
 
-        return X_pool, A_pool, mincut_loss + ortho_loss
+        # 合并mincut loss和orthogonality loss
+        loss = mincut_loss + ortho_loss
+        return X_pool, A_pool, loss
