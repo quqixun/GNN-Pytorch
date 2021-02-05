@@ -33,8 +33,6 @@ class MinCutPoolModel(nn.Module):
 
         super(MinCutPoolModel, self).__init__()
 
-        print('avg_nodes', avg_nodes)
-
         self.act = nn.ReLU(inplace=True)
 
         # 图卷积层
