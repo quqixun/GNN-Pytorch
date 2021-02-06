@@ -50,4 +50,4 @@ if __name__ == '__main__':
 
     # 使用Pubmed数据集训练和测试模型
     train_and_test('pubmed', dataset_root, config)
-    # Pubmed Test Accuracy: 0.858
+    # Pubmed Test Accuracy: 0.855

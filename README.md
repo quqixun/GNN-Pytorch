@@ -22,8 +22,8 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | :----------------: | :---------------------------: | :----------------------------------------------------------: | :---: | :------: | :------: |
 | :heavy_check_mark: |       [GCN](./Node/GCN)       | [Kipf and Welling, 2017](https://arxiv.org/pdf/1609.02907.pdf) | 0.819 |  0.702   | 0.790 |
 | :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Hamilton and Ying et al., 2017](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 |  0.701   | 0.778 |
-| :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.823 |  0.715   | 0.777 |
-| :heavy_check_mark: | [FastGCN](./Node/FastGCN)<sup>**\***</sup> | [Chen and Ma et al., 2018](https://arxiv.org/pdf/1801.10247.pdf) | 0.854 | 0.779 | 0.858 |
+| :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.824 |  0.719  | 0.782 |
+| :heavy_check_mark: | [FastGCN](./Node/FastGCN)<sup>**\***</sup> | [Chen and Ma et al., 2018](https://arxiv.org/pdf/1801.10247.pdf) | 0.854 | 0.779 | 0.855 |
 |  | GRAND | [Feng and Zhang et al., 2020](https://arxiv.org/pdf/2005.11079.pdf) |  |  |  |
 
 **\*** 使用Cora-Full，Pubmed-Full和Citeseer-Full数据集训练并评价。
@@ -45,8 +45,8 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 |       Status       |                 Method                 |                            Paper                             |  DD   | NCI1  | PROTEINS |
 | :----------------: | :------------------------------------: | :----------------------------------------------------------: | :---: | :---: | :------: |
 |                    |                DiffPool                |  [Ying et al., 2018](https://arxiv.org/pdf/1806.08804.pdf)   |       |       |          |
-| :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.753 | 0.757 |  0.757   |
-| :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.740 | 0.689 |  0.766   |
+| :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.723 | 0.757 |  0.757   |
+| :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.745 | 0.689 |  0.766   |
 |                    |              Graph U-Nets              |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |       |       |          |
 | :heavy_check_mark: |    [MinCutPool](./Graph/MinCutPool)    | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) | 0.774 | 0.751 |  0.761   |
 
@@ -61,6 +61,6 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | scipy           | 1.5.4  | pip install scipy==1.5.4                                     |
 | pyyaml          | 5.3.1  | pip install pyyaml==5.3.1                                    |
 | scikit-learn    | 0.24.0 | pip install scikit-learn==0.24.0                             |
-| pytorch         | 1.7.0  | cpu：conda install pytorch\==1.7.0 cpuonly -c pytorch<br/>gpu：conda install pytorch\==1.7.0 cudatoolkit=10.2 -c pytorch |
+| pytorch         | 1.7.1  | conda install pytorch\==1.7.1 cudatoolkit=11.0 -c pytorch    |
 | torch-geometric | 1.6.3  | [Installation](https://github.com/rusty1s/pytorch_geometric#installation) |
 

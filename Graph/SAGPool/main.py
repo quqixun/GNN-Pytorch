@@ -41,9 +41,9 @@ if __name__ == '__main__':
 
     # 使用DD数据集训练和测试模型
     train_and_test('SAGPoolG', 'DD', dataset_root, config)
-    # [SAGPoolG] DD Test Accuracy: 0.753
+    # [SAGPoolG] DD Test Accuracy: 0.723
     train_and_test('SAGPoolH', 'DD', dataset_root, config)
-    # [SAGPoolH] DD Test Accuracy: 0.740
+    # [SAGPoolH] DD Test Accuracy: 0.745
 
     # 使用NCI1数据集训练和测试模型
     train_and_test('SAGPoolG', 'NCI1', dataset_root, config)
