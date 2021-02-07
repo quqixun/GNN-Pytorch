@@ -5,14 +5,18 @@
 # -------------------------------------------------------------------
 cora:      # 使用Cora数据集训练模型
 # -------------------------------------------------------------------
-    sparse:           false       # 是否使用稀疏数据
     random_state:     42          # 随机种子
+    grand:                        #
+        S: 2                        #
+        K: 2                        #
+        T: 0.5                      #
+        L: 1.0                      #
+        D: 0.5                      #
     model:                        # 模型参数
-        alpha:        0.2           # LeakyReLU斜率
+        use_bn:       false         # 是否使用batch normalization
         dropout:      0.5           # dropout比例
-        num_heads:    8             # 多头注意力个数, 根据显存设置
         input_dim:    1433          # 节点特征维度
-        hidden_dim:   8             # 隐层输出特征维度
+        hidden_dim:   32            # 隐层输出特征维度
         output_dim:   7             # 节点类别个数
     hyper:                        # 训练超参数
         lr:           0.005         # 优化器初始学习率
@@ -25,14 +29,18 @@ cora:      # 使用Cora数据集训练模型
 # -------------------------------------------------------------------
 pubmed:    # 使用Pubmed数据集训练模型
 # -------------------------------------------------------------------
-    sparse:           true        # 是否使用稀疏数据
     random_state:     42          # 随机种子
+    grand:                        #
+        S: 2                        #
+        K: 2                        #
+        T: 0.5                      #
+        L: 1.0                      #
+        D: 0.5                      #
     model:                        # 模型参数
-        alpha:        0.2           # LeakyReLU斜率
+        use_bn:       false         # 是否使用batch normalization
         dropout:      0.7           # dropout比例
-        num_heads:    8             # 多头注意力个数, 根据显存设置
         input_dim:    500           # 节点特征维度
-        hidden_dim:   8             # 隐层输出特征维度
+        hidden_dim:   32             # 隐层输出特征维度
         output_dim:   3             # 节点类别个数
     hyper:                        # 训练超参数
         lr:           0.005         # 优化器初始学习率
@@ -44,14 +52,18 @@ pubmed:    # 使用Pubmed数据集训练模型
 # -------------------------------------------------------------------
 citeseer:  # 使用Citeseer数据集训练模型
 # -------------------------------------------------------------------
-    sparse:           false       # 是否使用稀疏数据
     random_state:     42          # 随机种子
+    grand:                        #
+        S: 2                        #
+        K: 2                        #
+        T: 0.5                      #
+        L: 1.0                      #
+        D: 0.5                      #
     model:                        # 模型参数
-        alpha:        0.2           # LeakyReLU斜率
+        use_bn:       false         # 是否使用batch normalization
         dropout:      0.7           # dropout比例
-        num_heads:    8             # 多头注意力个数, 根据显存设置
         input_dim:    3703          # 节点特征维度
-        hidden_dim:   8             # 隐层输出特征维度
+        hidden_dim:   32             # 隐层输出特征维度
         output_dim:   6             # 节点类别个数
     hyper:                        # 训练超参数
         lr:           0.005         # 优化器初始学习率

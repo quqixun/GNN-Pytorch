@@ -1,7 +1,7 @@
 from script.dataset import Dataset
 from script.prepare import prepare
 from script.utils import load_config
-# from script.pipeline import Pipeline
+from script.pipeline import Pipeline
 
 
 def train_and_test(data, dataset_root, config):
@@ -22,8 +22,8 @@ def train_and_test(data, dataset_root, config):
     prep_dataset = prepare(dataset)
 
     # 训练模型
-    # pipeline = Pipeline(**config[data])
-    # pipeline.train(prep_dataset)
+    pipeline = Pipeline(**config[data])
+    pipeline.train(prep_dataset)
 
     # 测试集准确率
     # test_acc = pipeline.predict(prep_dataset, 'test')
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     # Cora Test Accuracy:
 
     # 使用Citeseer数据集训练和测试模型
-    train_and_test('citeseer', dataset_root, config)
+    # train_and_test('citeseer', dataset_root, config)
     # Citeseer Test Accuracy:
 
     # 使用Pubmed数据集训练和测试模型
-    train_and_test('pubmed', dataset_root, config)
+    # train_and_test('pubmed', dataset_root, config)
     # Pubmed Test Accuracy:
