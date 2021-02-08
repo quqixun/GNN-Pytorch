@@ -1,4 +1,4 @@
-"""GCN模型训练与预测
+"""GRAND模型训练与预测
 """
 
 
@@ -14,11 +14,11 @@ from .model import MLP
 
 
 class Pipeline(object):
-    """GCN模型训练与预测
+    """GRAND模型训练与预测
     """
 
     def __init__(self, **params):
-        """GCN模型训练与预测
+        """GRAND模型训练与预测
 
             加载GCN模型, 生成训练必要组件实例
 
@@ -27,16 +27,24 @@ class Pipeline(object):
             params: dict, 模型参数和超参数, 格式为:
                     {
                         'random_state': 42,
+                        'grand': {
+                            'S': 4,
+                            'K': 5,
+                            'T': 0.5,
+                            'L': 1.0,
+                            'D': 0.5
+                        },
                         'model': {
                             'input_dim': 1433,
                             'output_dim': 7,
-                            'hidden_dim': 16,
-                            'use_bias': True,
+                            'hidden_dim': 32,
                             'dropout': 0.5
+                            'use_bn': False
                         },
                         'hyper': {
                             'lr': 1e-2,
-                            'epochs': 100,
+                            'epochs': 1000,
+                            'patience': 100,
                             'weight_decay': 5e-4
                         }
                     }

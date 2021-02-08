@@ -16,9 +16,9 @@ class GRAND(object):
 
         self.S = grand_params['S']
         self.K = grand_params['K']
+        self.D = grand_params['D']
         self.T = grand_params['T']
         self.L = grand_params['L']
-        self.D = grand_params['D']
 
         return
 
