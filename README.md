@@ -60,7 +60,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | --------------- | ------ | ------------------------------------------------------------ |
 | python          | 3.8.6  | conda create --name gnn python=3.8.6                         |
 | numpy           | 1.20.0 | pip install numpy==1.20.0                                    |
-| scipy           | 1.6.4  | pip install scipy==1.6.0                                     |
+| scipy           | 1.6.0  | pip install scipy==1.6.0                                     |
 | pyyaml          | 5.4.1  | pip install pyyaml==5.4.1                                    |
 | scikit-learn    | 0.24.1 | pip install scikit-learn==0.24.1                             |
 | pytorch         | 1.7.1  | conda install pytorch\==1.7.1 cudatoolkit=11.0 -c pytorch    |
