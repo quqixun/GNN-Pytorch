@@ -7,8 +7,8 @@ cora:      # 使用Cora数据集训练模型
 # -------------------------------------------------------------------
     random_state:     42          # 随机种子
     grand:                        #
-        S: 2                        #
-        K: 2                        #
+        S: 4                        #
+        K: 5                        #
         T: 0.5                      #
         L: 1.0                      #
         D: 0.5                      #
@@ -19,9 +19,9 @@ cora:      # 使用Cora数据集训练模型
         hidden_dim:   32            # 隐层输出特征维度
         output_dim:   7             # 节点类别个数
     hyper:                        # 训练超参数
-        lr:           0.005         # 优化器初始学习率
-        epochs:       1000          # 训练轮次
-        patience:     100           # 早停轮次
+        lr:           0.01          # 优化器初始学习率
+        epochs:       5000          # 训练轮次
+        patience:     200           # 早停轮次
         weight_decay: 0.0005        # 优化器权重衰减
 
 
@@ -31,19 +31,19 @@ pubmed:    # 使用Pubmed数据集训练模型
 # -------------------------------------------------------------------
     random_state:     42          # 随机种子
     grand:                        #
-        S: 2                        #
-        K: 2                        #
-        T: 0.5                      #
+        S: 4                        #
+        K: 5                        #
+        T: 0.2                      #
         L: 1.0                      #
         D: 0.5                      #
     model:                        # 模型参数
         use_bn:       false         # 是否使用batch normalization
-        dropout:      0.7           # dropout比例
+        dropout:      0.5           # dropout比例
         input_dim:    500           # 节点特征维度
-        hidden_dim:   32             # 隐层输出特征维度
+        hidden_dim:   32            # 隐层输出特征维度
         output_dim:   3             # 节点类别个数
     hyper:                        # 训练超参数
-        lr:           0.005         # 优化器初始学习率
+        lr:           0.2         # 优化器初始学习率
         epochs:       1000          # 训练轮次
         patience:     100           # 早停轮次
         weight_decay: 0.0005        # 优化器权重衰减
@@ -56,17 +56,17 @@ citeseer:  # 使用Citeseer数据集训练模型
     grand:                        #
         S: 2                        #
         K: 2                        #
-        T: 0.5                      #
-        L: 1.0                      #
+        T: 0.3                      #
+        L: 0.7                      #
         D: 0.5                      #
     model:                        # 模型参数
         use_bn:       false         # 是否使用batch normalization
-        dropout:      0.7           # dropout比例
+        dropout:      0.0           # dropout比例
         input_dim:    3703          # 节点特征维度
-        hidden_dim:   32             # 隐层输出特征维度
+        hidden_dim:   32            # 隐层输出特征维度
         output_dim:   6             # 节点类别个数
     hyper:                        # 训练超参数
-        lr:           0.005         # 优化器初始学习率
+        lr:           0.01          # 优化器初始学习率
         epochs:       1000          # 训练轮次
         patience:     100           # 早停轮次
         weight_decay: 0.0005        # 优化器权重衰减

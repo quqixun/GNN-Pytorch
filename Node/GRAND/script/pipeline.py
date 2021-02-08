@@ -46,7 +46,7 @@ class Pipeline(object):
         self.__init_environment(params['random_state'])
         self.__build_model(**params['model'])
         self.__build_components(**params['hyper'])
-        self.grand = GRAND(**params['grand'])
+        self.GRAND = GRAND(**params['grand'])
 
         return
 
@@ -92,6 +92,7 @@ class Pipeline(object):
         """
 
         self.epochs = hyper_params['epochs']
+        self.patience = hyper_params['patience']
 
         # 定义损失函数
         self.criterion = nn.CrossEntropyLoss()
@@ -124,44 +125,57 @@ class Pipeline(object):
         # 记录验证集最佳准确率
         best_valid_acc = 0
 
+        # 获得最佳的验证集后计数轮次
+        epochs_after_best = 0
+
         for epoch in range(self.epochs):
             # 模型训练模式
             self.model.train()
 
-            Xs = self.grand.random_propagate(
+            Xs = self.GRAND.random_propagate(
                 adjacency=dataset.adjacency,
                 X=dataset.X, train=True
             )
 
-            # break
+            outputs, cls_loss = [], 0
+            for X in Xs:
+                logits = self.model(X)[dataset.train_index]
+                outputs.append(logits.unsqueeze(0))
+                cls_loss += self.criterion(logits, train_y)
+            cls_loss /= len(Xs)
 
-        #     # 模型输出
-        #     logits = self.model(dataset.X)
-        #     train_logits = logits[dataset.train_index]
+            consist_loss = self.GRAND.consistency_loss(outputs)
+            loss = cls_loss + consist_loss
 
-        #     # 计算损失函数
-        #     loss = self.criterion(train_logits, train_y)
+            # 反向传播
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
 
-        #     # 反向传播
-        #     self.optimizer.zero_grad()
-        #     loss.backward()
-        #     self.optimizer.step()
+            # 计算训练集准确率
+            train_acc = self.predict(dataset, 'train')
 
-        #     # 计算训练集准确率
-        #     train_acc = self.predict(dataset, 'train')
-        #     # 计算验证集准确率
-        #     valid_acc = self.predict(dataset, 'valid')
+            # 计算验证集准确率
+            valid_acc = self.predict(dataset, 'valid')
 
-        #     print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
-        #         epoch, loss, train_acc, valid_acc))
+            print('[Epoch:{:03d}]-[Loss:{:.4f}]-[TrainAcc:{:.4f}]-[ValidAcc:{:.4f}]'.format(
+                epoch, loss, train_acc, valid_acc))
 
-        #     if valid_acc >= best_valid_acc:
-        #         # 获得最佳验证集准确率
-        #         best_model = copy.deepcopy(self.model)
-        #         best_valid_acc = valid_acc
+            if valid_acc >= best_valid_acc:
+                # 获得最佳验证集准确率
+                best_model = copy.deepcopy(self.model)
+                best_valid_acc = valid_acc
+                # 从新计数轮次
+                epochs_after_best = 0
+            else:
+                # 未获得最佳验证集准确率
+                # 增加计数轮次
+                epochs_after_best += 1
 
-        # # 最终模型为验证集效果最佳的模型
-        # self.model = best_model
+            if epochs_after_best == self.patience:
+                # 符合早停条件
+                self.model = best_model
+                break
 
         return
 
@@ -192,7 +206,11 @@ class Pipeline(object):
             mask = dataset.test_index
 
         # 获得待预测节点的输出
-        logits = self.model(dataset.X)
+        X = self.GRAND.random_propagate(
+            adjacency=dataset.adjacency,
+            X=dataset.X, train=False
+        )[0]
+        logits = self.model(X)
         predict_y = logits[mask].max(1)[1]
 
         # 计算预测准确率
