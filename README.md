@@ -24,7 +24,7 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | :heavy_check_mark: | [GraphSAGE](./Node/GraphSAGE) | [Hamilton and Ying et al., 2017](https://arxiv.org/pdf/1706.02216.pdf) | 0.801 |  0.701   | 0.778 |
 | :heavy_check_mark: |       [GAT](./Node/GAT)       | [Velickovic et al., 2018](https://arxiv.org/pdf/1710.10903.pdf) | 0.824 |  0.719  | 0.782 |
 | :heavy_check_mark: | [FastGCN](./Node/FastGCN)<sup>**\***</sup> | [Chen and Ma et al., 2018](https://arxiv.org/pdf/1801.10247.pdf) | 0.854 | 0.779 | 0.855 |
-|  | GRAND | [Feng and Zhang et al., 2020](https://arxiv.org/pdf/2005.11079.pdf) |  |  |  |
+| :heavy_check_mark: | [GRAND](./Node/GRAND) | [Feng and Zhang et al., 2020](https://arxiv.org/pdf/2005.11079.pdf) | 0.838 | 0.723 | 0.783 |
 
 **\*** 使用Cora-Full，Pubmed-Full和Citeseer-Full数据集训练并评价。
 
