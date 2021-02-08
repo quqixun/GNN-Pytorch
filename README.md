@@ -1,6 +1,8 @@
 # GNN-Pytorch
 GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 
+这里更注重方法的学习，而不是获得更高的结果。
+
 <br/>
 
 ## 节点分类 - Node Classification
