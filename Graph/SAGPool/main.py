@@ -47,12 +47,12 @@ if __name__ == '__main__':
 
     # 使用NCI1数据集训练和测试模型
     train_and_test('SAGPoolG', 'NCI1', dataset_root, config)
-    # [SAGPoolG] NCI1 Test Accuracy: 0.757
+    # [SAGPoolG] NCI1 Test Accuracy: 0.763
     train_and_test('SAGPoolH', 'NCI1', dataset_root, config)
-    # [SAGPoolH] NCI1 Test Accuracy: 0.689
+    # [SAGPoolH] NCI1 Test Accuracy: 0.648
 
     # 使用PROTEINS数据集训练和测试模型
     train_and_test('SAGPoolG', 'PROTEINS', dataset_root, config)
     # [SAGPoolG] PROTEINS Test Accuracy: 0.757
     train_and_test('SAGPoolH', 'PROTEINS', dataset_root, config)
-    # [SAGPoolH] PROTEINS Test Accuracy: 0.766
+    # [SAGPoolH] PROTEINS Test Accuracy: 0.743
