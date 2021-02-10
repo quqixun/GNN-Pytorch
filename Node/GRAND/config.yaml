@@ -8,10 +8,10 @@ cora:      # 使用Cora数据集训练模型
     random_state:     42          # 随机种子
     grand:                        # GRAND参数
         S:            4             # Augmentation次数
-        K:            5             # Order
+        K:            5             # Order聚合次数
         D:            0.5           # DropNode比例
         T:            0.5           # Temperature控制类别分布
-        L:            1.0           # Consistensy Loss系数 
+        L:            1.0           # Consistensy Loss系数
     model:                        # 模型参数
         use_bn:       false         # 是否使用batch normalization
         dropout:      0.5           # dropout比例
@@ -32,7 +32,7 @@ pubmed:    # 使用Pubmed数据集训练模型
     random_state:     42          # 随机种子
     grand:                        # GRAND参数
         S:            4             # Augmentation次数
-        K:            5             # Order
+        K:            5             # Order聚合次数
         D:            0.5           # DropNode比例
         T:            0.2           # Temperature控制类别分布
         L:            1.0           # Consistensy Loss系数
@@ -49,13 +49,14 @@ pubmed:    # 使用Pubmed数据集训练模型
         weight_decay: 0.0005        # 优化器权重衰减
 
 
+
 # -------------------------------------------------------------------
 citeseer:  # 使用Citeseer数据集训练模型
 # -------------------------------------------------------------------
     random_state:     42          # 随机种子
     grand:                        # GRAND参数
-        S:            2             # Augmentation次数
-        K:            2             # Order
+        S:            4             # Augmentation次数
+        K:            5             # Order聚合次数
         D:            0.5           # DropNode比例
         T:            0.3           # Temperature控制类别分布
         L:            0.7           # Consistensy Loss系数

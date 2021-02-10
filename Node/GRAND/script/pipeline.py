@@ -140,19 +140,25 @@ class Pipeline(object):
             # 模型训练模式
             self.model.train()
 
+            # Augmentation过程, 包含DropNode合多阶聚合过程
             Xs = self.GRAND.random_propagate(
                 adjacency=dataset.adjacency,
                 X=dataset.X, train=True
             )
 
+            # 对每组Augmentation的数据分别做预测并计算分类损失函数
             outputs, cls_loss = [], 0
             for X in Xs:
                 logits = self.model(X)[dataset.train_index]
                 outputs.append(logits.unsqueeze(0))
                 cls_loss += self.criterion(logits, train_y)
+            # 所有组数据的平均分类损失函数为训练数据的分类损失函数
             cls_loss /= len(Xs)
 
+            # 计算一致性损失
             consist_loss = self.GRAND.consistency_loss(outputs)
+
+            # 合并分类损失与一致性损失
             loss = cls_loss + consist_loss
 
             # 反向传播
@@ -162,7 +168,6 @@ class Pipeline(object):
 
             # 计算训练集准确率
             train_acc = self.predict(dataset, 'train')
-
             # 计算验证集准确率
             valid_acc = self.predict(dataset, 'valid')
 
@@ -214,6 +219,7 @@ class Pipeline(object):
             mask = dataset.test_index
 
         # 获得待预测节点的输出
+        # 推断过程中不包含DropNode, 仅有多阶聚合过程
         X = self.GRAND.random_propagate(
             adjacency=dataset.adjacency,
             X=dataset.X, train=False

@@ -42,12 +42,12 @@ if __name__ == '__main__':
 
     # 使用Cora数据集训练和测试模型
     train_and_test('cora', dataset_root, config)
-    # Cora Test Accuracy: 0.838
+    # Cora Test Accuracy: 0.839
 
     # 使用Citeseer数据集训练和测试模型
     train_and_test('citeseer', dataset_root, config)
-    # Citeseer Test Accuracy: 0.723
+    # Citeseer Test Accuracy: 0.726
 
     # 使用Pubmed数据集训练和测试模型
     train_and_test('pubmed', dataset_root, config)
-    # Pubmed Test Accuracy: 0.783
+    # Pubmed Test Accuracy: 0.797
