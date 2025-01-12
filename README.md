@@ -46,8 +46,6 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 
 |       Status       |                 Method                 |                            Paper                             |  DD   | NCI1  | PROTEINS |
 | :----------------: | :------------------------------------: | :----------------------------------------------------------: | :---: | :---: | :------: |
-|                    |                DiffPool                |  [Ying et al., 2018](https://arxiv.org/pdf/1806.08804.pdf)   |       |       |          |
-|                    |   [Graph U-Nets](./Graph/GraphUNets)   |   [Gao et al., 2019](https://arxiv.org/pdf/1905.05178.pdf)   |       |       |          |
 | :heavy_check_mark: | [SAGPool<sub>g</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.723 | 0.763 |  0.757   |
 | :heavy_check_mark: | [SAGPool<sub>h</sub>](./Graph/SAGPool) | [Lee and Lee et al., 2019](https://arxiv.org/pdf/1904.08082.pdf) | 0.745 | 0.648 |  0.743   |
 | :heavy_check_mark: |    [MinCutPool](./Graph/MinCutPool)    | [Bianchi and Grattarola et al., 2020](https://arxiv.org/pdf/1907.00481.pdf) | 0.770 | 0.742 |  0.766   |
@@ -64,5 +62,5 @@ GNN方法和模型的Pytorch实现。Pytorch implementation of GNN.
 | pyyaml          | 5.4.1  | pip install pyyaml==5.4.1                                    |
 | scikit-learn    | 0.24.1 | pip install scikit-learn==0.24.1                             |
 | pytorch         | 1.7.1  | conda install pytorch\==1.7.1 cudatoolkit=11.0 -c pytorch    |
-| torch-geometric | 1.6.3  | [Installation](https://github.com/rusty1s/pytorch_geometric#installation) |
+| torch-geometric | 1.6.3  | [Installation](https://github.com/pyg-team/pytorch_geometric/tree/1.6.3) |
 
